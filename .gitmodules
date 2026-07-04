@@ -1,0 +1,3 @@
+[submodule "external/bioreactor"]
+	path = external/bioreactor
+	url = https://github.com/Grimmchen68/Bioreactor-Cultured-Meat.git
