@@ -27,9 +27,9 @@ export function propertyLabel(key: string): string {
 
 export function formatPropertyValue(key: string, value: number): string {
   const suffix = PROPERTY_SUFFIX[key] ?? ''
-  if (key === 'density_kg_m3') return value.toLocaleString('de-DE') + suffix
+  if (key === 'density_kg_m3') return value.toLocaleString('en-US') + suffix
   if (key === 'pH') return value.toFixed(2)
-  return value.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + suffix
+  return value.toLocaleString('en-US', { maximumFractionDigits: 1 }) + suffix
 }
 
 export function formatProperty(key: string, value: number): string {
@@ -38,7 +38,7 @@ export function formatProperty(key: string, value: number): string {
 
 export function formatNumber(value: number, decimals = 1): string {
   if (value >= 1e6) return (value / 1e6).toFixed(1) + ' × 10⁶'
-  if (value >= 1e3) return value.toLocaleString('de-DE', { maximumFractionDigits: decimals })
+  if (value >= 1e3) return value.toLocaleString('en-US', { maximumFractionDigits: decimals })
   return value.toFixed(decimals)
 }
 
@@ -50,7 +50,8 @@ export function equipmentTypeLabel(type: string): string {
     bioreactor: 'Bioreactor',
     centrifuge: 'Centrifuge',
     column: 'Chromatography Column',
-    formulator: 'Formulation Unit',
+    pump: 'Centrifugal Pump',
+    heat_exchanger: 'Heat Exchanger / Sterilizer',
   }
   return labels[type] ?? type
 }

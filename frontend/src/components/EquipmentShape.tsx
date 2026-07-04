@@ -64,6 +64,22 @@ export function EquipmentShape({ type, width, height, selected }: Props) {
           ))}
         </g>
       )
+    case 'pump':
+      return (
+        <g className="eq-body">
+          <circle cx={w / 2} cy={h / 2} r={w * 0.28} fill={fill} stroke={stroke} strokeWidth={1.5} />
+          <polygon points={`${w * 0.65},${h * 0.35} ${w * 0.65},${h * 0.65} ${w * 0.85},${h * 0.5}`} fill="var(--accent-soft)" stroke="var(--accent)" strokeWidth={1} />
+        </g>
+      )
+    case 'heat_exchanger':
+      return (
+        <g className="eq-body">
+          <rect x={w * 0.15} y={h * 0.25} width={w * 0.7} height={h * 0.5} rx={3} fill={fill} stroke={stroke} strokeWidth={1.5} />
+          {[0.35, 0.5, 0.65].map((x, i) => (
+            <line key={i} x1={w * x} y1={h * 0.28} x2={w * x} y2={h * 0.72} stroke="var(--stream)" strokeWidth={1} opacity={0.5} />
+          ))}
+        </g>
+      )
     default:
       return (
         <g className="eq-body">

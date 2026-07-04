@@ -7,12 +7,13 @@ interface Props {
   onClose: () => void
 }
 
-type Tab = 'composition' | 'properties' | 'balance'
+type Tab = 'composition' | 'properties' | 'materials' | 'balance'
 
 export function StreamPanel({ stream, onClose }: Props) {
   const [tab, setTab] = useState<Tab>('composition')
   const compEntries = Object.entries(stream.composition).sort((a, b) => b[1] - a[1])
   const propEntries = Object.entries(stream.properties)
+  const matEntries = Object.entries(stream.materials ?? {})
 
   return (
     <aside className="side-panel">
@@ -29,21 +30,23 @@ export function StreamPanel({ stream, onClose }: Props) {
             {propEntries.slice(0, 6).map(([key, val]) => (
               <div key={key} className="prop-row">
                 <span className="prop-row__key">{propertyLabel(key)}</span>
-                <span className="prop-row__val">{formatPropertyValue(key, val)}</span>
+                <span className="prop-row__val">
+                  {typeof val === 'number' ? formatPropertyValue(key, val) : String(val)}
+                </span>
               </div>
             ))}
           </div>
         </section>
 
         <nav className="tabs">
-          {(['composition', 'properties', 'balance'] as Tab[]).map((t) => (
+          {(['composition', 'properties', 'materials', 'balance'] as Tab[]).map((t) => (
             <button
               key={t}
               type="button"
               className={`tab${tab === t ? ' tab--active' : ''}`}
               onClick={() => setTab(t)}
             >
-              {t === 'composition' ? 'Composition' : t === 'properties' ? 'Properties' : 'Mass & Energy'}
+              {t === 'composition' ? 'Composition' : t === 'properties' ? 'Properties' : t === 'materials' ? 'Materials' : 'Mass & Energy'}
             </button>
           ))}
         </nav>
@@ -67,7 +70,22 @@ export function StreamPanel({ stream, onClose }: Props) {
             {propEntries.map(([key, val]) => (
               <div key={key} className="prop-row">
                 <span className="prop-row__key">{propertyLabel(key)}</span>
-                <span className="prop-row__val">{formatPropertyValue(key, val)}</span>
+                <span className="prop-row__val">
+                  {typeof val === 'number' ? formatPropertyValue(key, val) : String(val)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'materials' && (
+          <div className="prop-grid">
+            {matEntries.length === 0 ? (
+              <div className="prop-row"><span className="prop-row__key">No material breakdown</span></div>
+            ) : matEntries.map(([key, val]) => (
+              <div key={key} className="prop-row">
+                <span className="prop-row__key">{key}</span>
+                <span className="prop-row__val">{val.toLocaleString('de-DE')} kg</span>
               </div>
             ))}
           </div>

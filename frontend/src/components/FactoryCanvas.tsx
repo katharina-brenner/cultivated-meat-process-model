@@ -61,13 +61,13 @@ function EquipmentNode({
       <text className="eq-tag" x={eq.width / 2} y={eq.height + 14} textAnchor="middle">
         {eq.tag}
       </text>
-      {eq.tag === 'BR-201' && (
+      {eq.tag === 'BR-102' && (
         <>
           <text className="eq-name" x={eq.width / 2} y={eq.height + 24} textAnchor="middle">
             {String(eq.properties.working_volume_L?.toLocaleString())} L
           </text>
           <text className="eq-name" x={eq.width / 2} y={eq.height / 2 + 4} textAnchor="middle" fill="var(--accent)" fontSize={8}>
-            {eq.properties.temperature_C}°C · pH {eq.properties.pH}
+            37°C · 5×10⁷ cells/mL
           </text>
         </>
       )}
@@ -118,8 +118,8 @@ export function FactoryCanvas({
     [model],
   )
 
-  const viewW = 1720
-  const viewH = 480
+  const viewW = 2580
+  const viewH = 520
 
   return (
     <svg
@@ -173,10 +173,13 @@ export function FactoryCanvas({
       ))}
 
       {/* Raw materials inlet */}
-      <g transform="translate(60, 310)">
-        <rect x={0} y={0} width={80} height={40} rx={8} fill="var(--bg-subtle)" stroke="var(--border-strong)" strokeWidth={1} />
-        <text x={40} y={24} textAnchor="middle" fontSize={9} fill="var(--text-muted)" fontFamily="var(--font)">
-          RAW
+      <g transform="translate(40, 340)" style={{ cursor: 'pointer' }} onClick={() => onAreaClick('raw')}>
+        <rect x={0} y={0} width={160} height={48} rx={8} fill="var(--accent-soft)" stroke="var(--accent)" strokeWidth={1} />
+        <text x={80} y={20} textAnchor="middle" fontSize={9} fill="var(--accent)" fontFamily="var(--mono)" fontWeight={500}>
+          RAW MATERIALS
+        </text>
+        <text x={80} y={34} textAnchor="middle" fontSize={8} fill="var(--text-muted)" fontFamily="var(--font)">
+          8 components · Table 3
         </text>
       </g>
     </svg>

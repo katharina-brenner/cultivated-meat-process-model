@@ -1,0 +1,179 @@
+# Reference data from Brenner et al. (2026), Front. Nutr. 13:1844185
+# Scenario 1: Main Process, 90:10 sterilization split
+# doi: 10.3389/fnut.2026.1844185
+
+reference:
+  citation: "Brenner KJ et al. (2026) Decoding cultured meat manufacturing. Front. Nutr. 13:1844185"
+  doi: "10.3389/fnut.2026.1844185"
+  scenario: "Main Process, 90:10 split"
+  batch_duration_h: 736.26
+  product_mass_kg_per_batch: 2112.61
+  product_entities_per_batch: 2091.69
+
+process_parameters:
+  max_cell_density_cells_mL: 5.0e7
+  culture_temperature_C: 37
+  doubling_time_h: 20
+  culture_time_per_stage_h: 120
+  inoculum_volume_mL: 2
+  sterilization_split_filtration: 0.90
+  sterilization_split_heat: 0.10
+
+# Table 3 — artificial medium composition (g/L and kg/batch for 20,000 L)
+raw_materials:
+  - id: water
+    name: Water (WFI)
+    concentration_g_L: 976.984
+    mass_kg_per_batch: 19539.685
+    category: solvent
+    sterilization: heat_or_filtration
+  - id: amino_acids
+    name: Amino Acids
+    concentration_g_L: 1.272
+    mass_kg_per_batch: 25.44
+    category: nutrient
+    sterilization: heat
+    route: V-102
+  - id: glucose
+    name: Glucose
+    concentration_g_L: 4.500
+    mass_kg_per_batch: 90.00
+    category: nutrient
+    sterilization: heat
+    route: V-102
+  - id: salts
+    name: Salts
+    concentration_g_L: 9.589
+    mass_kg_per_batch: 191.78
+    category: buffer
+    sterilization: heat
+    route: V-102
+  - id: trace_elements
+    name: Trace Elements
+    concentration_g_L: 0.00501
+    mass_kg_per_batch: 0.100
+    category: supplement
+    sterilization: heat
+    route: V-102
+  - id: proteins
+    name: Proteins (FBS-derived)
+    concentration_g_L: 3.000
+    mass_kg_per_batch: 60.00
+    category: supplement
+    sterilization: filtration
+    route: V-101
+  - id: growth_factors
+    name: Growth Factors (IGF-1)
+    concentration_g_L: 0.000005
+    mass_kg_per_batch: 0.0001
+    category: growth_factor
+    sterilization: filtration
+    route: V-101
+  - id: vitamins
+    name: Vitamins
+    concentration_g_L: 0.0294
+    mass_kg_per_batch: 0.587
+    category: supplement
+    sterilization: filtration
+    route: V-101
+  - id: inoculum
+    name: Inoculum (cryostock biomass)
+    mass_kg_per_batch: 0.002
+    category: biological
+    note: "2 mL cryostock at 1×10⁷ cells/mL"
+
+# Table 8 — utilities per batch (Scenario 1, 90:10)
+utilities_per_batch:
+  cip:
+    aws_kg: 2001.07
+    cws_kg: 3842.06
+    sws_kg: 1000.01
+    water_kg: 58778.74
+  heating_cooling:
+    cooling_water_kg: 410.23
+    chilled_water_kg: 163111.91
+    steam_kg: 42.72
+  aeration:
+    synthetic_air_kg: 11506.78
+    synthetic_air_CO2_mol_percent: 5
+    purge_air_kg: 33.3
+
+# Energy from paper (kWh per batch, Scenario 1)
+energy_per_batch:
+  media_storage_cooling_kWh: 113.36
+  cell_expansion_kWh: 1720.08
+  dsp_estimated_kWh: 185.0
+  total_estimated_kWh: 2018.44
+
+# Table 7 — bioreactor power during fermentation
+cell_expansion_vessels:
+  - tag: SFR-101
+    name: Shake Flask I
+    working_volume_L: 0.1
+    vessel_volume_L: 0.125
+    specific_power_kW_m3: 3.0
+    total_power_kW: 0.0003
+    coolant_kg_h: 0.04
+    culture_time_h: 120
+  - tag: SFR-102
+    name: Shake Flask II
+    working_volume_L: 1.6
+    vessel_volume_L: 2.0
+    specific_power_kW_m3: 3.0
+    total_power_kW: 0.0047
+    coolant_kg_h: 0.69
+    culture_time_h: 120
+  - tag: RBS-101
+    name: Wave Bioreactor I
+    working_volume_L: 25
+    vessel_volume_L: 50
+    specific_power_kW_m3: 3.0
+    total_power_kW: 0.073
+    coolant_kg_h: 10.78
+    culture_time_h: 120
+  - tag: RBS-102
+    name: Wave Bioreactor II
+    working_volume_L: 250
+    vessel_volume_L: 500
+    specific_power_kW_m3: 3.0
+    total_power_kW: 0.73
+    coolant_kg_h: 108.13
+    culture_time_h: 120
+  - tag: BR-101
+    name: Seed STR
+    working_volume_L: 2000
+    vessel_volume_L: 2500
+    specific_power_kW_m3: 0.5
+    total_power_kW: 0.97
+    coolant_kg_h: 77.12
+    culture_time_h: 120
+  - tag: BR-102
+    name: Production STR
+    working_volume_L: 20000
+    vessel_volume_L: 25000
+    specific_power_kW_m3: 0.5
+    total_power_kW: 9.69
+    coolant_kg_h: 748.58
+    culture_time_h: 120
+
+# Outlet streams (Table 4, Section 3.1)
+outlet_streams:
+  depleted_medium:
+    tag: S-156
+    mass_t_per_batch: 15.0
+    temperature_C: 15.0
+  waste:
+    tag: S-154
+    components: ["Buffer Solution", "Depleted Medium", "Impurities"]
+    temperature_C: 10.8
+  product:
+    tag: DS-102
+    mass_kg_per_batch: 2112.61
+    pack_size_kg: 1.0
+    container_g: 10
+
+# CO2 / LCA assumptions (documented defaults for footprint estimate)
+footprint_assumptions:
+  grid_emission_factor_kgCO2_per_kWh: 0.385
+  steam_emission_factor_kgCO2_per_kg: 0.25
+  note: "Grid factor: EU average; steam: literature default for impact screening"

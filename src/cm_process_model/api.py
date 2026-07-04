@@ -6,9 +6,12 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from cm_process_model.impact_model import build_export_bundle, build_impact_summary
 from cm_process_model.plant_topology import build_plant_topology
+from cm_process_model.process_guide import build_process_guide
 
 app = FastAPI(title="Cultivated Meat Process Model", version="0.1.0")
 
@@ -23,6 +26,25 @@ app.add_middleware(
 @app.get("/api/factory")
 def get_factory() -> dict:
     return build_plant_topology()
+
+
+@app.get("/api/guide")
+def get_guide() -> dict:
+    return build_process_guide()
+
+
+@app.get("/api/impact")
+def get_impact() -> dict:
+    return build_impact_summary()
+
+
+@app.get("/api/export")
+def export_all() -> JSONResponse:
+    bundle = build_export_bundle()
+    return JSONResponse(
+        content=bundle,
+        headers={"Content-Disposition": "attachment; filename=cm-factory-export.json"},
+    )
 
 
 @app.get("/api/health")

@@ -1,5 +1,5 @@
 import type { Equipment, FactoryModel } from '../types/factory'
-import { equipmentTypeLabel, formatNumber } from '../utils/format'
+import { equipmentTypeLabel } from '../utils/format'
 
 interface Props {
   equipment: Equipment
@@ -19,9 +19,9 @@ export function EquipmentQuickView({
   onBalance,
 }: Props) {
   const p = equipment.properties
-  const isBioreactor = equipment.equipment_type === 'bioreactor' && equipment.tag === 'BR-201'
-
+  const isProduction = equipment.tag === 'BR-102'
   const phenomena = model.phenomena.filter((ph) => ph.equipment_tag === equipment.tag)
+  const operations = equipment.operations ?? []
 
   return (
     <aside className="side-panel">
@@ -33,104 +33,73 @@ export function EquipmentQuickView({
       </header>
 
       <div className="panel-body">
-        {isBioreactor ? (
+        {isProduction ? (
           <>
             <p className="panel-subtitle" style={{ marginBottom: 8 }}>
-              {String(p.working_volume_L?.toLocaleString())} L working volume · {String(p.mode)}
+              {String(p.working_volume_L?.toLocaleString())} L · {String(p.culture_time_h)} h · Brenner Table 2
             </p>
-
             <div className="quick-stats">
               <div className="quick-stat">
-                <div className="quick-stat__value">{p.temperature_C} °C</div>
-                <div className="quick-stat__label">Temperature</div>
-              </div>
-              <div className="quick-stat">
-                <div className="quick-stat__value">{p.pH}</div>
-                <div className="quick-stat__label">pH</div>
-              </div>
-              <div className="quick-stat">
-                <div className="quick-stat__value">{p.DO_percent} %</div>
-                <div className="quick-stat__label">DO</div>
-              </div>
-            </div>
-
-            <div className="quick-stats">
-              <div className="quick-stat">
-                <div className="quick-stat__value">{p.pressure_bar} bar</div>
-                <div className="quick-stat__label">Pressure</div>
-              </div>
-              <div className="quick-stat">
-                <div className="quick-stat__value">{p.agitation_rpm} rpm</div>
+                <div className="quick-stat__value">{p.total_power_kW} kW</div>
                 <div className="quick-stat__label">Agitation</div>
               </div>
               <div className="quick-stat">
-                <div className="quick-stat__value">{p.VVD} VVD</div>
-                <div className="quick-stat__label">Perfusion</div>
+                <div className="quick-stat__value">{String(p.coolant_kg_h)}</div>
+                <div className="quick-stat__label">Coolant kg/h</div>
+              </div>
+              <div className="quick-stat">
+                <div className="quick-stat__value">5×10⁷</div>
+                <div className="quick-stat__label">cells/mL max</div>
               </div>
             </div>
-
-            <section className="panel-section">
-              <h3 className="panel-section__title">Culture state</h3>
-              <div className="prop-grid">
-                <div className="prop-row">
-                  <span className="prop-row__key">Cell density</span>
-                  <span className="prop-row__val">
-                    {formatNumber(Number(p.cell_density_cells_mL) / 1e6, 1)} × 10⁶ cells/mL
-                  </span>
-                </div>
-                <div className="prop-row">
-                  <span className="prop-row__key">Viability</span>
-                  <span className="prop-row__val">{p.viability_percent} %</span>
-                </div>
-                <div className="prop-row">
-                  <span className="prop-row__key">Biomass</span>
-                  <span className="prop-row__val">{Number(p.biomass_kg).toLocaleString('de-DE', { maximumFractionDigits: 0 })} kg</span>
-                </div>
-              </div>
-            </section>
-
-            {phenomena.length > 0 && (
-              <section className="panel-section">
-                <h3 className="panel-section__title">Phenomena</h3>
-                <div className="phenomena-grid">
-                  {phenomena.map((ph) => (
-                    <button
-                      key={ph.id}
-                      type="button"
-                      className="phenomenon-chip"
-                      onClick={() => onPhenomenon(ph.id)}
-                    >
-                      {ph.name.replace(' Network', '').replace('Oxygen ', '')}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <button type="button" className="btn btn--primary" style={{ width: '100%', marginTop: 16 }} onClick={onExplore}>
-              Explore Process
-            </button>
-            <button type="button" className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={onBalance}>
-              Mass & Energy Balance
-            </button>
           </>
-        ) : (
-          <>
-            <section className="panel-section">
-              <h3 className="panel-section__title">Properties</h3>
-              <div className="prop-grid">
-                {Object.entries(p).map(([key, val]) => (
-                  <div key={key} className="prop-row">
-                    <span className="prop-row__key">{key.replace(/_/g, ' ')}</span>
-                    <span className="prop-row__val">{String(val)}</span>
-                  </div>
-                ))}
+        ) : null}
+
+        <section className="panel-section">
+          <h3 className="panel-section__title">Properties</h3>
+          <div className="prop-grid">
+            {Object.entries(p).filter(([, v]) => v != null).map(([key, val]) => (
+              <div key={key} className="prop-row">
+                <span className="prop-row__key">{key.replace(/_/g, ' ')}</span>
+                <span className="prop-row__val">{String(val)}</span>
               </div>
-            </section>
-            <button type="button" className="btn btn--ghost" style={{ width: '100%', marginTop: 16 }} onClick={onBalance}>
-              View Balance
-            </button>
-          </>
+            ))}
+          </div>
+        </section>
+
+        {operations.length > 0 && (
+          <section className="panel-section">
+            <h3 className="panel-section__title">Operations</h3>
+            <div className="phenomena-grid">
+              {operations.map((op) => (
+                <span key={op} className="phenomenon-chip" style={{ cursor: 'default' }}>{op}</span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {phenomena.length > 0 && (
+          <section className="panel-section">
+            <h3 className="panel-section__title">Phenomena</h3>
+            <div className="phenomena-grid">
+              {phenomena.map((ph) => (
+                <button key={ph.id} type="button" className="phenomenon-chip" onClick={() => onPhenomenon(ph.id)}>
+                  {ph.name.split(' ')[0]}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {isProduction && (
+          <button type="button" className="btn btn--primary" style={{ width: '100%', marginTop: 16 }} onClick={onExplore}>
+            Explore Process
+          </button>
+        )}
+        {model.mass_balances[equipment.tag] && (
+          <button type="button" className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={onBalance}>
+            Mass & Energy Balance
+          </button>
         )}
       </div>
     </aside>
