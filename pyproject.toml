@@ -15,11 +15,21 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+api = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+]
 dev = [
     "pytest>=8.0",
     "ipykernel>=6.29",
     "jupyter>=1.0",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "httpx>=0.27",
 ]
+
+[project.scripts]
+cm-factory = "cm_process_model.api:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/cm_process_model"]
