@@ -137,7 +137,7 @@
             <div id="factoryMap" class="factory-map" aria-label="Clickable production plant"></div>
             <aside id="unitInspector" class="unit-inspector" aria-label="Selected unit details"></aside>
           </div>
-          <div id="modelMatchStrip" class="model-match-strip"></div>
+          <div id="referenceDeltaStrip" class="reference-delta-strip"></div>
         </section>
 
         <section class="metric-grid view-panel active" data-view-panel="plant" data-export-scope="summary">
@@ -201,7 +201,16 @@
               <h2>Time response</h2>
               <span id="currentStage">Media prep</span>
             </div>
-            <canvas id="timelineCanvas" width="980" height="320" aria-label="Cell count and energy over time"></canvas>
+            <div id="timelineMetricControls" class="timeline-metric-controls" aria-label="Timeline variables">
+              <label><input type="checkbox" data-timeline-metric="cells" checked /> <span>Cells</span></label>
+              <label><input type="checkbox" data-timeline-metric="biomass" checked /> <span>Biomass</span></label>
+              <label><input type="checkbox" data-timeline-metric="energy" checked /> <span>Energy</span></label>
+              <label><input type="checkbox" data-timeline-metric="medium" /> <span>Medium</span></label>
+              <label><input type="checkbox" data-timeline-metric="oxygen" /> <span>O2</span></label>
+              <label><input type="checkbox" data-timeline-metric="co2" /> <span>CO2</span></label>
+              <label><input type="checkbox" data-timeline-metric="utilityWater" /> <span>Utility water</span></label>
+            </div>
+            <canvas id="timelineCanvas" width="980" height="360" aria-label="Selectable process response curves over time"></canvas>
             <div id="timeBalanceStrip" class="time-balance-strip" aria-label="Process time balance"></div>
           </article>
 
@@ -225,13 +234,13 @@
           </article>
         </section>
 
-        <section class="panel model-audit view-panel" data-view-panel="model" data-export-scope="model-match">
+        <section class="panel reference-values view-panel" data-view-panel="model" data-export-scope="reference-values">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Model audit</p>
-              <h2>Live model vs baseline</h2>
+              <p class="eyebrow">Paper reference</p>
+              <h2>Reference values and live deltas</h2>
             </div>
-            <span id="modelAuditStatus">checking</span>
+            <span id="referenceStatus">live deltas</span>
           </div>
           <div class="table-wrap">
             <table>
@@ -239,11 +248,11 @@
                 <tr>
                   <th>Value</th>
                   <th>Live app</th>
-                  <th>Python baseline</th>
-                  <th>Status</th>
+                  <th>Paper reference</th>
+                  <th>Delta</th>
                 </tr>
               </thead>
-              <tbody id="modelAuditTable"></tbody>
+              <tbody id="referenceTable"></tbody>
             </table>
           </div>
         </section>

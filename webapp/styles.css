@@ -23,6 +23,7 @@
 }
 
 body {
+  position: relative;
   margin: 0;
   min-width: 320px;
   background:
@@ -30,6 +31,18 @@ body {
     repeating-linear-gradient(90deg, rgba(10,20,30,0.03) 0 1px, transparent 1px 76px),
     repeating-linear-gradient(0deg, rgba(10,20,30,0.02) 0 1px, transparent 1px 58px);
   color: var(--text);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 76% 12%, rgba(255,255,255,0.74), transparent 24%),
+    url("assets/bioprocess-plant-background.svg") no-repeat right 88px top 120px / min(1120px, 86vw) auto;
+  opacity: 0.19;
 }
 
 button,
@@ -61,6 +74,8 @@ select {
 }
 
 .app-shell {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 320px minmax(0, 1fr);
   gap: 18px;
@@ -169,8 +184,8 @@ select {
 }
 
 .view-tabs {
-  position: sticky;
-  top: 10px;
+  position: relative;
+  top: auto;
   z-index: 19;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -214,7 +229,7 @@ select {
 }
 
 .factory-control.view-panel.active,
-.model-audit.view-panel.active,
+.reference-values.view-panel.active,
 .export-center.view-panel.active,
 .reference-panel.view-panel.active {
   display: block;
@@ -237,10 +252,10 @@ select {
 }
 
 .primary-button {
-  background: linear-gradient(180deg, #0a84ff, #006bd6);
+  background: linear-gradient(180deg, #111820, #05080c);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 8px 22px rgba(0, 113, 227, 0.22);
+  box-shadow: 0 12px 28px rgba(12, 17, 22, 0.22);
 }
 
 .secondary-button {
@@ -843,14 +858,14 @@ select {
   font-size: 11px;
 }
 
-.model-match-strip {
+.reference-delta-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-top: 12px;
 }
 
-.match-pill {
+.reference-pill {
   min-height: 54px;
   padding: 9px 10px;
   border: 1px solid var(--line);
@@ -858,27 +873,27 @@ select {
   background: rgba(255, 255, 255, 0.76);
 }
 
-.match-pill span {
+.reference-pill span {
   display: block;
   color: var(--muted);
   font-size: 11px;
 }
 
-.match-pill strong,
-.audit-status {
+.reference-pill strong,
+.delta-status {
   display: inline-block;
   margin-top: 4px;
   font-size: 12px;
   font-weight: 750;
 }
 
-.match-pill.matched strong,
-.audit-status.matched {
+.reference-pill.near strong,
+.delta-status.near {
   color: var(--green);
 }
 
-.match-pill.drift strong,
-.audit-status.drift {
+.reference-pill.offset strong,
+.delta-status.offset {
   color: var(--amber);
 }
 
@@ -1019,6 +1034,8 @@ input[type="range"] {
 
 .process-stage {
   position: relative;
+  display: grid;
+  gap: 14px;
   align-self: stretch;
   min-height: 310px;
   padding: 18px;
@@ -1194,10 +1211,8 @@ input[type="range"] {
 }
 
 .side-stream {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 14px;
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
@@ -1367,8 +1382,45 @@ input[type="range"] {
 
 #timelineCanvas {
   width: 100%;
-  height: 280px;
+  height: 320px;
   display: block;
+}
+
+.timeline-metric-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.timeline-metric-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.timeline-metric-controls input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: var(--text);
+}
+
+.timeline-metric-controls label:has(input:checked) {
+  border-color: rgba(16, 20, 24, 0.26);
+  background: #101418;
+  color: #fff;
 }
 
 .time-balance-strip {
@@ -1838,7 +1890,7 @@ td:first-child {
   .bottom-grid,
   .metric-grid,
   .reference-grid,
-  .model-match-strip,
+  .reference-delta-strip,
   .step-export-list,
   .download-summary {
     grid-template-columns: 1fr;

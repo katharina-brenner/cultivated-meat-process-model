@@ -52,13 +52,14 @@ const processCanvas = document.getElementById("processCanvas");
 const processCtx = processCanvas.getContext("2d");
 const timelineCanvas = document.getElementById("timelineCanvas");
 const timelineCtx = timelineCanvas.getContext("2d");
+const timelineMetricControls = document.getElementById("timelineMetricControls");
 const contextMenu = document.getElementById("contextMenu");
 const hoverTooltip = document.getElementById("hoverTooltip");
 const processDiagram = document.getElementById("processDiagram");
 const utilityRail = document.getElementById("utilityRail");
 const factoryMap = document.getElementById("factoryMap");
 const unitInspector = document.getElementById("unitInspector");
-const modelMatchStrip = document.getElementById("modelMatchStrip");
+const referenceDeltaStrip = document.getElementById("referenceDeltaStrip");
 const downloadScenarioSelect = document.getElementById("downloadScenario");
 
 let simulation = null;
@@ -387,6 +388,10 @@ function n(value) {
   return Number(value);
 }
 
+function bounded(value, min = 0, max = 1) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function fmt(value, digits = 0) {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: digits,
@@ -671,6 +676,16 @@ function simulate() {
     totalTimeH,
     biomassKg,
     timing,
+    mediumKg,
+    oxygenKg,
+    co2Kg,
+    bufferKg: p.bufferVolumeL,
+    utilityWaterKg:
+      (reportedUtilities.chilledWaterKg || 0) +
+      (reportedUtilities.cwsKg || 0) +
+      (reportedUtilities.awsKg || 0) +
+      (reportedUtilities.swsKg || 0) +
+      p.bufferVolumeL,
   }, p);
 
   return {
@@ -738,8 +753,29 @@ function simulate() {
 }
 
 function buildTimeline(stages, energy, params) {
-  const points = [{ t: 0, cells: 0, biomass: 0, energy: 0, stage: "Media prep" }];
-  points.push({ t: stages[0].startTimeH, cells: stages[0].startCells, biomass: 0, energy: energy.mediaPrepKwh, stage: "Media prep" });
+  const finalCells = stages[stages.length - 1]?.endCells || 1;
+  const totalEnergyKwh = Math.max(energy.totalEnergyKwh || energy.mediaPrepKwh, 1);
+  const downstreamStart = stages[stages.length - 1].endTimeH;
+  const downstreamH = Math.max(energy.timing?.downstreamH || downstreamDurationH(), 0.001);
+  const makePoint = (t, cells, biomass, cumulativeEnergy, stage) => {
+    const mediaFraction = bounded(t / Math.max(energy.timing?.mediaPrepH || mediaPrepDuration(params), 0.001));
+    const biologyFraction = bounded(cells / finalCells);
+    const downstreamFraction = bounded((t - downstreamStart) / downstreamH);
+    const energyFraction = bounded(cumulativeEnergy / totalEnergyKwh);
+    return {
+      t,
+      cells,
+      biomass,
+      energy: cumulativeEnergy,
+      medium: (energy.mediumKg || 0) * mediaFraction,
+      oxygen: (energy.oxygenKg || 0) * biologyFraction,
+      co2: (energy.co2Kg || 0) * biologyFraction,
+      utilityWater: (energy.utilityWaterKg || 0) * bounded(energyFraction * 0.76 + downstreamFraction * 0.24),
+      stage,
+    };
+  };
+  const points = [makePoint(0, 0, 0, 0, "Media prep")];
+  points.push(makePoint(stages[0].startTimeH, stages[0].startCells, 0, energy.mediaPrepKwh, "Media prep"));
   let cumulativeEnergy = energy.mediaPrepKwh;
   stages.forEach((stage) => {
     for (let i = 0; i <= 12; i += 1) {
@@ -749,17 +785,16 @@ function buildTimeline(stages, energy, params) {
       const cells = Math.min(stage.endCells, possible);
       const biomass = cells * params.cellMassKg * params.viability;
       const stageEnergy = stage.agitationKwh * f;
-      points.push({
+      points.push(makePoint(
         t,
         cells,
         biomass,
-        energy: cumulativeEnergy + stageEnergy,
-        stage: stage.id,
-      });
+        cumulativeEnergy + stageEnergy,
+        stage.id,
+      ));
     }
     cumulativeEnergy += stage.agitationKwh;
   });
-  const downstreamStart = stages[stages.length - 1].endTimeH;
   const downstreamEnergy = energy.downstreamInitialCoolKwh + energy.centrifugeCoolKwh + energy.washThermalKwh + energy.extrusionCoolKwh;
   const segmentEnergy = {
     clarification: energy.downstreamInitialCoolKwh + energy.centrifugeCoolKwh,
@@ -772,22 +807,22 @@ function buildTimeline(stages, energy, params) {
   Object.entries(downstreamDurationsH).forEach(([key, durationH]) => {
     downstreamCursor += durationH;
     cumulativeDownstreamEnergy += segmentEnergy[key] || 0;
-    points.push({
-      t: Math.min(downstreamCursor, energy.totalTimeH),
-      cells: stages[stages.length - 1].endCells,
-      biomass: energy.biomassKg,
-      energy: cumulativeDownstreamEnergy,
-      stage: key === "clarification" ? "Clarification" : key[0].toUpperCase() + key.slice(1),
-    });
+    points.push(makePoint(
+      Math.min(downstreamCursor, energy.totalTimeH),
+      stages[stages.length - 1].endCells,
+      energy.biomassKg,
+      cumulativeDownstreamEnergy,
+      key === "clarification" ? "Clarification" : key[0].toUpperCase() + key.slice(1),
+    ));
   });
   if (energy.totalTimeH > downstreamCursor) {
-    points.push({
-      t: energy.totalTimeH,
-      cells: stages[stages.length - 1].endCells,
-      biomass: energy.biomassKg,
-      energy: cumulativeEnergy + downstreamEnergy,
-      stage: "Batch closeout",
-    });
+    points.push(makePoint(
+      energy.totalTimeH,
+      stages[stages.length - 1].endCells,
+      energy.biomassKg,
+      cumulativeEnergy + downstreamEnergy,
+      "Batch closeout",
+    ));
   }
   return points.sort((a, b) => a.t - b.t);
 }
@@ -897,15 +932,13 @@ function render() {
   renderPlantInsights(sim);
   renderFactoryMap(sim, currentTime);
   renderUnitInspector(sim);
-  renderModelAudit(sim);
+  renderReferenceValues(sim);
   renderExportCenter(sim);
   drawProcess(sim, currentTime);
   drawTimeline(sim, currentTime);
 }
 
 function plantInsights(sim) {
-  const comparisons = modelComparisons(sim);
-  const matched = comparisons.filter((item) => item.matched).length;
   const timingSegments = [
     ["Media prep", sim.timing.mediaPrepH],
     ["Seed train", sim.timing.seedTrainH],
@@ -918,9 +951,13 @@ function plantInsights(sim) {
   const cadenceKgDay = sim.downstream.packagedKg / Math.max(sim.totalTimeH / 24, 0.001);
   const energyIntensity = sim.energy.totalEnergyKwh / packagedKg;
   const mediumIntensity = sim.medium.mediumKg / packagedKg;
+  const biomassYield = sim.downstream.packagedKg / Math.max(sim.medium.mediumKg + sim.params.bufferVolumeL, 1);
   const utilityWaterKg =
     (sim.utility.chilledWaterKg || 0) +
-    (sim.utility.coolingWaterKg || 0) +
+    (sim.utility.estimatedCoolingWaterKg || 0) +
+    (sim.utility.cwsKg || 0) +
+    (sim.utility.awsKg || 0) +
+    (sim.utility.swsKg || 0) +
     (sim.utility.processWaterKg || 0) +
     sim.params.bufferVolumeL;
   return [
@@ -953,11 +990,11 @@ function plantInsights(sim) {
       status: "watch",
     },
     {
-      key: "readiness",
-      label: "Model readiness",
-      value: `${matched}/${comparisons.length}`,
-      detail: "baseline checks matched",
-      status: matched === comparisons.length ? "steady" : "watch",
+      key: "yield",
+      label: "Process yield",
+      value: `${fmt(biomassYield * 100, 1)}%`,
+      detail: `${fmt(sim.downstream.packagedKg, 0)} kg packaged / batch`,
+      status: biomassYield > 0.08 ? "steady" : "watch",
     },
   ];
 }
@@ -1311,10 +1348,10 @@ function renderFactoryMap(sim, currentTime) {
       <rect class="factory-zone" x="46" y="70" width="1048" height="264" rx="16"/>
       <rect class="factory-zone" x="46" y="374" width="1048" height="138" rx="16"/>
       <rect class="factory-zone" x="46" y="592" width="1048" height="274" rx="16"/>
-      <text class="factory-zone-label" x="68" y="106">Media preparation</text>
-      <text class="factory-zone-label" x="68" y="410">Cell expansion and production</text>
-      <text class="factory-zone-label" x="68" y="628">Downstream processing</text>
-      <text class="factory-zone-label" x="560" y="884">Waste and side streams</text>
+      <text class="factory-zone-label" x="68" y="58">Media preparation</text>
+      <text class="factory-zone-label" x="68" y="362">Cell expansion and production</text>
+      <text class="factory-zone-label" x="68" y="580">Downstream processing</text>
+      <text class="factory-zone-label" x="878" y="580">Waste and side streams</text>
       ${streams.map((item, index) => renderStreamPath(item, deviceByKey, index)).join("")}
       ${devices.map((device) => renderDeviceNode(device, currentPhase(sim, currentTime))).join("")}
       <g class="factory-callout compact">
@@ -1628,7 +1665,7 @@ function formatValue(value) {
   return Number(value).toPrecision(3);
 }
 
-function modelComparisons(sim) {
+function referenceComparisons(sim) {
   const processTarget = currentPreset === "heat" ? pythonBaseline.processCompleteH5050 : currentPreset === "local" ? pythonBaseline.localProcessCompleteH : pythonBaseline.processCompleteH;
   const steamTarget = currentPreset === "heat" ? 216.53 : pythonBaseline.steamKg;
   return [
@@ -1644,37 +1681,40 @@ function modelComparisons(sim) {
     ["Production agitation", sim.energy.productionAgitationKwh, pythonBaseline.productionAgitationKwh, "kWh"],
     ["Steam utility", sim.utility.steamKg, steamTarget, "kg"],
     ["Chilled water utility", sim.utility.chilledWaterKg, pythonBaseline.chilledWaterKg, "kg"],
-  ].map(([label, live, baseline, unit]) => {
-    const diff = live - baseline;
-    const tolerance = Math.max(Math.abs(baseline) * 0.002, unit === "h" ? 0.5 : 0.05);
+  ].map(([label, live, paperReference, unit]) => {
+    const diff = live - paperReference;
+    const tolerance = Math.max(Math.abs(paperReference) * 0.002, unit === "h" ? 0.5 : 0.05);
     return {
       label,
       live,
-      baseline,
+      paperReference,
       unit,
       diff,
-      matched: Math.abs(diff) <= tolerance,
+      withinTolerance: Math.abs(diff) <= tolerance,
     };
   });
 }
 
-function renderModelAudit(sim) {
-  const comparisons = modelComparisons(sim);
-  const matched = comparisons.filter((item) => item.matched).length;
-  const status = `${matched}/${comparisons.length} matched`;
-  document.getElementById("modelAuditStatus").textContent = status;
-  modelMatchStrip.innerHTML = comparisons.slice(0, 5).map((item) => `
-    <div class="match-pill ${item.matched ? "matched" : "drift"}">
+function formatDelta(item) {
+  const sign = item.diff > 0 ? "+" : "";
+  return `${sign}${formatValue(item.diff)} ${item.unit}`;
+}
+
+function renderReferenceValues(sim) {
+  const comparisons = referenceComparisons(sim);
+  document.getElementById("referenceStatus").textContent = `${comparisons.length} paper values`;
+  referenceDeltaStrip.innerHTML = comparisons.slice(0, 5).map((item) => `
+    <div class="reference-pill ${item.withinTolerance ? "near" : "offset"}">
       <span>${escapeHtml(item.label)}</span>
-      <strong>${item.matched ? "match" : `${fmt(item.diff, 2)} ${item.unit}`}</strong>
+      <strong>Δ ${escapeHtml(formatDelta(item))}</strong>
     </div>
   `).join("");
-  document.getElementById("modelAuditTable").innerHTML = comparisons.map((item) => `
+  document.getElementById("referenceTable").innerHTML = comparisons.map((item) => `
     <tr>
       <td>${escapeHtml(item.label)}</td>
       <td>${formatValue(item.live)} ${escapeHtml(item.unit)}</td>
-      <td>${formatValue(item.baseline)} ${escapeHtml(item.unit)}</td>
-      <td><span class="audit-status ${item.matched ? "matched" : "drift"}">${item.matched ? "matched" : `drift ${fmt(item.diff, 2)} ${item.unit}`}</span></td>
+      <td>${formatValue(item.paperReference)} ${escapeHtml(item.unit)}</td>
+      <td><span class="delta-status ${item.withinTolerance ? "near" : "offset"}">Δ ${escapeHtml(formatDelta(item))}</span></td>
     </tr>
   `).join("");
 }
@@ -2291,6 +2331,24 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
+function timelineMetricCatalog() {
+  return [
+    { key: "cells", field: "growthIndex", label: "log10 cells", color: "#15845f" },
+    { key: "biomass", field: "biomass", label: "biomass kg", color: "#0f9f8f" },
+    { key: "energy", field: "energy", label: "cumulative kWh", color: "#0071e3" },
+    { key: "medium", field: "medium", label: "medium kg", color: "#5c6ac4" },
+    { key: "oxygen", field: "oxygen", label: "O2 kg", color: "#a96c12" },
+    { key: "co2", field: "co2", label: "CO2 kg", color: "#c3423f" },
+    { key: "utilityWater", field: "utilityWater", label: "utility water kg", color: "#5e6a75" },
+  ];
+}
+
+function selectedTimelineMetrics() {
+  const boxes = Array.from(timelineMetricControls?.querySelectorAll("[data-timeline-metric]") || []);
+  const selected = boxes.filter((box) => box.checked).map((box) => box.dataset.timelineMetric);
+  return selected.length ? selected : ["cells", "biomass", "energy"];
+}
+
 function drawTimeline(sim, currentTime) {
   const rect = resizeCanvas(timelineCanvas, timelineCtx);
   const ctx = timelineCtx;
@@ -2298,15 +2356,16 @@ function drawTimeline(sim, currentTime) {
   const padL = 58;
   const padR = 58;
   const padT = 34;
-  const padB = 42;
+  const selectedKeys = selectedTimelineMetrics();
+  const selectedMetrics = timelineMetricCatalog().filter((metric) => selectedKeys.includes(metric.key));
+  const estimatedLegendCols = rect.width > 760 ? 4 : rect.width > 560 ? 3 : rect.width > 420 ? 2 : 1;
+  const padB = 44 + Math.ceil(Math.max(selectedMetrics.length, 1) / estimatedLegendCols) * 18;
   const w = rect.width - padL - padR;
   const h = rect.height - padT - padB;
   const chartPoints = sim.timeline.map((point) => ({
     ...point,
     growthIndex: Math.log10(Math.max(point.cells, 1)),
   }));
-  const maxGrowth = Math.max(...chartPoints.map((p) => p.growthIndex), 1);
-  const maxEnergy = Math.max(...sim.timeline.map((p) => p.energy), 1);
 
   ctx.fillStyle = "rgba(248,251,253,0.86)";
   roundRect(ctx, 10, 10, rect.width - 20, rect.height - 20, 8);
@@ -2345,8 +2404,10 @@ function drawTimeline(sim, currentTime) {
     ctx.fillText(`${fmt(sim.totalTimeH * fraction, 0)} h`, xTick, padT + h + 18);
   });
 
-  drawLine(ctx, chartPoints, padL, padT, w, h, sim.totalTimeH, maxGrowth, "growthIndex", "#15845f");
-  drawLine(ctx, chartPoints, padL, padT, w, h, sim.totalTimeH, maxEnergy, "energy", "#0071e3");
+  selectedMetrics.forEach((metric) => {
+    const maxValue = Math.max(...chartPoints.map((point) => Math.abs(point[metric.field] || 0)), 1);
+    drawLine(ctx, chartPoints, padL, padT, w, h, sim.totalTimeH, maxValue, metric.field, metric.color);
+  });
 
   const x = padL + (currentTime / sim.totalTimeH) * w;
   ctx.strokeStyle = "#101418";
@@ -2361,17 +2422,32 @@ function drawTimeline(sim, currentTime) {
   ctx.textAlign = "left";
   ctx.fillText(`${fmt(currentTime, 1)} h · ${currentPhaseLabel(sim, currentTime)}`, Math.min(x + 8, rect.width - 230), padT + 18);
   ctx.fillStyle = "rgba(16,20,24,0.62)";
-  ctx.fillText(`${scientific(sim.finalStage.endCells)} final cells`, padL, padT - 12);
+  const topLabels = selectedMetrics.slice(0, 2).map((metric) => {
+    const maxValue = Math.max(...chartPoints.map((point) => Math.abs(point[metric.field] || 0)), 1);
+    return `${metric.label} max ${metric.key === "cells" ? fmt(maxValue, 1) : fmt(maxValue, 0)}`;
+  });
+  ctx.fillText(topLabels.join(" · ") || `${scientific(sim.finalStage.endCells)} final cells`, padL, padT - 12);
   ctx.textAlign = "right";
-  ctx.fillText(`${fmt(maxEnergy, 0)} kWh total`, padL + w, padT - 12);
-  ctx.fillStyle = "#15845f";
-  ctx.textAlign = "left";
-  ctx.fillText("growth: log10(cells)", padL, rect.height - 14);
-  ctx.fillStyle = "#0a84ff";
-  ctx.fillText("cumulative kWh", padL + 160, rect.height - 14);
+  ctx.fillText(`total ${fmt(sim.totalTimeH, 2)} h`, padL + w, padT - 12);
+
+  const legendCols = Math.max(1, Math.min(4, Math.floor(w / 170)));
+  selectedMetrics.forEach((metric, index) => {
+    const col = index % legendCols;
+    const row = Math.floor(index / legendCols);
+    const lx = padL + col * Math.min(172, w / legendCols);
+    const ly = rect.height - 34 + row * 16;
+    ctx.fillStyle = metric.color;
+    ctx.beginPath();
+    ctx.arc(lx + 5, ly - 4, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(16,20,24,0.7)";
+    ctx.textAlign = "left";
+    ctx.font = "700 11px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.fillText(metric.label, lx + 15, ly);
+  });
   ctx.fillStyle = "rgba(16,20,24,0.52)";
   ctx.textAlign = "right";
-  ctx.fillText(`total ${fmt(sim.totalTimeH, 2)} h`, padL + w, rect.height - 14);
+  ctx.fillText("normalized per selected signal", padL + w, rect.height - 14);
 }
 
 function drawLine(ctx, points, padX, padY, w, h, totalTime, maxValue, key, color) {
@@ -2419,6 +2495,7 @@ function downloadDataPackage(sim) {
       },
       total_energy_kwh: sim.energy.totalEnergyKwh,
       medium_kg: sim.medium.mediumKg,
+      selected_timeline_variables: selectedTimelineMetrics(),
     },
     equipmentTable: devices.map((device) => ({
       key: device.key,
@@ -2472,8 +2549,17 @@ function downloadDataPackage(sim) {
       cells: point.cells,
       biomass_kg: point.biomass,
       cumulative_energy_kwh: point.energy,
+      prepared_medium_kg: point.medium,
+      cumulative_oxygen_kg: point.oxygen,
+      cumulative_co2_kg: point.co2,
+      cumulative_utility_water_kg: point.utilityWater,
     })),
-    modelAudit: modelComparisons(sim),
+    timelineVariableCatalog: timelineMetricCatalog().map((metric) => ({
+      key: metric.key,
+      label: metric.label,
+      exported_column: metric.field === "growthIndex" ? "cells" : metric.field,
+    })),
+    referenceComparisons: referenceComparisons(sim),
     plantIntelligence: plantInsights(sim),
     operationExplanations: operationExplanationData(sim),
     referenceAssetManifest: referenceAssets.map((asset) => ({
@@ -2562,7 +2648,7 @@ function dataForExport(scope = "full") {
     devices: deviceCatalog(sim),
     streams: streamCatalog(sim),
     dataPackage: downloadDataPackage(sim),
-    modelComparisons: modelComparisons(sim),
+    referenceComparisons: referenceComparisons(sim),
     plantIntelligence: plantInsights(sim),
     selectedProcessStep: selectedStepKey,
     selectedFactoryDetail: selectedDetail,
@@ -2586,8 +2672,8 @@ function dataForExport(scope = "full") {
   if (scope === "process") return { processSteps: report.processSteps, utility: report.utility };
   if (scope === "stages") return { stages: report.stages, processSteps: report.processSteps };
   if (scope === "references") return { referenceAssets: report.referenceAssets };
-  if (scope === "model-match") return { modelComparisons: report.modelComparisons };
-  if (scope === "plant") return { devices: report.devices, streams: report.streams, processSteps: report.processSteps, modelComparisons: report.modelComparisons, plantIntelligence: report.plantIntelligence };
+  if (scope === "reference-values") return { referenceComparisons: report.referenceComparisons };
+  if (scope === "plant") return { devices: report.devices, streams: report.streams, processSteps: report.processSteps, referenceComparisons: report.referenceComparisons, plantIntelligence: report.plantIntelligence };
   if (scope === "data-package") return report.dataPackage;
   if (scope === "operation-notes") return report.operationExplanations;
   if (scope === "exports") return report;
@@ -2770,8 +2856,8 @@ function completeHtmlReport() {
   const referencesHtml = referenceAssets
     .map((asset) => `<li><a href="${escapeHtml(asset)}">${escapeHtml(asset)}</a></li>`)
     .join("");
-  const auditHtml = modelComparisons(sim)
-    .map((item) => `<tr><td>${escapeHtml(item.label)}</td><td>${escapeHtml(formatValue(item.live))} ${escapeHtml(item.unit)}</td><td>${escapeHtml(formatValue(item.baseline))} ${escapeHtml(item.unit)}</td><td>${item.matched ? "matched" : `drift ${escapeHtml(fmt(item.diff, 2))} ${escapeHtml(item.unit)}`}</td></tr>`)
+  const referenceHtml = referenceComparisons(sim)
+    .map((item) => `<tr><td>${escapeHtml(item.label)}</td><td>${escapeHtml(formatValue(item.live))} ${escapeHtml(item.unit)}</td><td>${escapeHtml(formatValue(item.paperReference))} ${escapeHtml(item.unit)}</td><td>Δ ${escapeHtml(formatDelta(item))}</td></tr>`)
     .join("");
   const energyHtml = dataPack.energyTable
     .map((item) => `<tr><td>${escapeHtml(item.key)}</td><td>${escapeHtml(formatValue(item.value_kwh))} kWh</td></tr>`)
@@ -2783,7 +2869,7 @@ function completeHtmlReport() {
     .map((item) => `<tr><td>${escapeHtml(item.key)}</td><td>${escapeHtml(formatValue(item.value))}</td></tr>`)
     .join("");
   const timelineHtml = dataPack.timelineTable
-    .map((item) => `<tr><td>${escapeHtml(formatValue(item.time_h))}</td><td>${escapeHtml(item.stage)}</td><td>${escapeHtml(formatValue(item.biomass_kg))}</td><td>${escapeHtml(formatValue(item.cumulative_energy_kwh))}</td></tr>`)
+    .map((item) => `<tr><td>${escapeHtml(formatValue(item.time_h))}</td><td>${escapeHtml(item.stage)}</td><td>${escapeHtml(formatValue(item.cells))}</td><td>${escapeHtml(formatValue(item.biomass_kg))}</td><td>${escapeHtml(formatValue(item.cumulative_energy_kwh))}</td><td>${escapeHtml(formatValue(item.prepared_medium_kg))}</td><td>${escapeHtml(formatValue(item.cumulative_oxygen_kg))}</td><td>${escapeHtml(formatValue(item.cumulative_co2_kg))}</td><td>${escapeHtml(formatValue(item.cumulative_utility_water_kg))}</td></tr>`)
     .join("");
   const equipmentHtml = devices
     .map((device) => `
@@ -2882,11 +2968,11 @@ function completeHtmlReport() {
     </section>
     <section>
       <h2>Timeline table</h2>
-      <table><thead><tr><th>Time h</th><th>Stage</th><th>Biomass kg</th><th>Cumulative kWh</th></tr></thead><tbody>${timelineHtml}</tbody></table>
+      <table><thead><tr><th>Time h</th><th>Stage</th><th>Cells</th><th>Biomass kg</th><th>Cumulative kWh</th><th>Medium kg</th><th>O2 kg</th><th>CO2 kg</th><th>Utility water kg</th></tr></thead><tbody>${timelineHtml}</tbody></table>
     </section>
     <section>
-      <h2>Python baseline audit</h2>
-      <table><tbody>${auditHtml}</tbody></table>
+      <h2>Paper reference values</h2>
+      <table><thead><tr><th>Value</th><th>Live app</th><th>Paper reference</th><th>Delta</th></tr></thead><tbody>${referenceHtml}</tbody></table>
     </section>
     <section>
       <h2>Factory equipment</h2>
@@ -3315,6 +3401,8 @@ function applyPreset(presetKey, resetTime = true) {
 document.querySelectorAll(".preset-button").forEach((button) => {
   button.addEventListener("click", () => applyPreset(button.dataset.preset));
 });
+
+timelineMetricControls?.addEventListener("change", render);
 
 downloadScenarioSelect?.addEventListener("change", () => {
   applyPreset(downloadScenarioSelect.value);
