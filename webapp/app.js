@@ -882,102 +882,246 @@ function renderReferenceAssets() {
     .join("");
 }
 
+function deviceCatalog(sim) {
+  const stepByKey = Object.fromEntries(processStepCatalog(sim).map((step) => [step.key, step]));
+  const commonPhysical = { pressure_bar: 1.013, material_model: "water-like broth/media", cp_kj_kg_K: cpWater };
+  return [
+    { key: "v101", id: "V-101", title: "Sensitive media blend", stepKey: "media", icon: "media", x: 92, y: 112, type: "blend tank", value: `${fmt(sim.medium.sterileVolumeL)} L`, properties: { volume_L: sim.medium.sterileVolumeL, temperature_C: 25, mixing_min: 60, specific_power_kw_m3: 0.1, ...commonPhysical } },
+    { key: "de102", id: "DE-102", title: "Sterile filter 1", stepKey: "media", icon: "media", x: 232, y: 112, type: "dead-end filter", value: `${fmt(sim.medium.firstFilterRemovedKg, 3)} kg removed`, properties: { filter_area_m2: 20, flux_L_m2_h: 250, removal_fraction: 0.8 } },
+    { key: "v102", id: "V-102", title: "Heat-stable media blend", stepKey: "media", icon: "media", x: 92, y: 242, type: "blend tank", value: `${fmt(sim.medium.heatVolumeL)} L`, properties: { volume_L: sim.medium.heatVolumeL, temperature_C: 25, mixing_min: 60, specific_power_kw_m3: 0.1, ...commonPhysical } },
+    { key: "st101", id: "ST-101", title: "Heat sterilizer", stepKey: "media", icon: "media", x: 232, y: 242, type: "sterilizer", value: `${fmt(sim.energy.mediaHeatKwh, 1)} kWh`, properties: { inlet_C: 25, sterilization_C: 121, outlet_C: 35, steam_kg_reported: sim.utility.steamKg, steam_kg_estimated: sim.utility.estimatedSteamKg } },
+    { key: "de101", id: "DE-101", title: "Sterile filter 2", stepKey: "media", icon: "media", x: 372, y: 112, type: "polishing filter", value: `${fmt(sim.medium.secondFilterRemovedKg, 3)} kg removed`, properties: { removal_fraction: 1.0, impurities_remaining_kg: 0 } },
+    { key: "mx101", id: "MX-101", title: "Medium mixer", stepKey: "media", icon: "media", x: 512, y: 178, type: "static mixer", value: fmtKg(sim.medium.mediumKg), properties: { reaction: "Reaction 1", output_medium_kg: sim.medium.mediumKg, water_kg: sim.medium.waterKg, solids_kg: sim.medium.solidsKg } },
+    { key: "v110", id: "V-110", title: "Cold medium store", stepKey: "media", icon: "media", x: 652, y: 178, type: "storage tank", value: "4 C", properties: { storage_temperature_C: 4, storage_cooling_kwh: sim.energy.storageCoolKwh, chilled_water_kg_reported: sim.utility.chilledWaterKg } },
+    { key: "sfr101", id: "SFR-101", title: "Shake flask 0.1 L", stepKey: "seed", icon: "seed", x: 92, y: 380, type: "shake flask", value: scientific(sim.stages[0]?.endCells || 0), properties: stageProperties(sim.stages[0]) },
+    { key: "sfr102", id: "SFR-102", title: "Shake flask 1.6 L", stepKey: "seed", icon: "seed", x: 232, y: 380, type: "shake flask", value: scientific(sim.stages[1]?.endCells || 0), properties: stageProperties(sim.stages[1]) },
+    { key: "rbs101", id: "RBS-101", title: "Wave reactor 25 L", stepKey: "seed", icon: "seed", x: 372, y: 380, type: "wave bioreactor", value: scientific(sim.stages[2]?.endCells || 0), properties: stageProperties(sim.stages[2]) },
+    { key: "rbs102", id: "RBS-102", title: "Wave reactor 250 L", stepKey: "seed", icon: "seed", x: 512, y: 380, type: "wave bioreactor", value: scientific(sim.stages[3]?.endCells || 0), properties: stageProperties(sim.stages[3]) },
+    { key: "br101", id: "BR-101", title: "Seed STR 2,000 L", stepKey: "seed", icon: "reactor", x: 652, y: 380, type: "seed STR", value: scientific(sim.stages[4]?.endCells || 0), properties: stageProperties(sim.stages[4]) },
+    { key: "br102", id: sim.finalStage.id, title: "Production STR", stepKey: "production", icon: "reactor", x: 832, y: 380, type: "production STR", value: fmtKg(sim.reaction.biomassKg), properties: { working_volume_L: sim.params.finalVolumeL, density_cells_ml: sim.achievedDensity, power_kw: sim.finalStage.powerKw, culture_duration_h: sim.params.stageDurationH, temperature_C: 37, oxygen_kg: sim.reaction.oxygenKg, co2_kg: sim.reaction.co2Kg } },
+    { key: "pm103", id: "PM-103", title: "Broth transfer pump", stepKey: "clarification", icon: "centrifuge", x: 92, y: 548, type: "pump", value: "4,000 L/h", properties: { flow_L_h: 4000, pressure_increase_bar: 1 } },
+    { key: "hx101", id: "HX-101", title: "Broth cooler", stepKey: "clarification", icon: "wash", x: 232, y: 548, type: "heat exchanger", value: `${fmt(sim.energy.downstreamInitialCoolKwh, 1)} kWh`, properties: { inlet_C: 37, outlet_C: 25, cooling_kwh: sim.energy.downstreamInitialCoolKwh } },
+    { key: "ds101", id: "DS-101", title: "Disk-stack centrifuge", stepKey: "clarification", icon: "centrifuge", x: 372, y: 548, type: "centrifuge", value: fmtKg(sim.downstream.productMassAfterCentrifuge), properties: { recovery: sim.params.recovery, power_kw: 35.64, heat_dissipation_fraction: 0.25, product_biomass_fraction: 0.3839 } },
+    { key: "de103", id: "DE-103", title: "Waste sterile filter", stepKey: "waste", icon: "waste", x: 512, y: 662, type: "waste filter", value: fmtKg(sim.downstream.depletedWasteKg), properties: { filter_area_m2: 20, cartridges: 2 } },
+    { key: "v103", id: "V-103", title: "Depleted medium store", stepKey: "waste", icon: "waste", x: 652, y: 662, type: "waste tank", value: fmtKg(sim.downstream.depletedWasteKg), properties: { storage_tank_volume_L: 14402.33, stream_id: "S-156" } },
+    { key: "wsh101", id: "WSH-101", title: "Biomass washer", stepKey: "washing", icon: "wash", x: 512, y: 548, type: "washer", value: fmtKg(sim.downstream.washedProductKg), properties: { buffer_volume_L: sim.params.bufferVolumeL, target_biomass_fraction: sim.params.washBiomassFraction, thermal_mixing_kwh: sim.energy.washThermalKwh } },
+    { key: "xd101", id: "XD-101", title: "Extruder", stepKey: "extrusion", icon: "extrusion", x: 652, y: 548, type: "extruder", value: `${fmt(sim.energy.extrusionCoolKwh, 1)} kWh`, properties: { screw_velocity_rpm: 200, outlet_temperature_C: 4, cooling_kwh: sim.energy.extrusionCoolKwh } },
+    { key: "fl101", id: "FL-101", title: "Filler", stepKey: "packaging", icon: "package", x: 832, y: 548, type: "filling", value: `${fmt(sim.downstream.packageUnits, 0)} packs`, properties: { product_per_entity_kg: 1, container_kg_each: 0.01, container_total_kg: sim.downstream.containerKg } },
+  ].map((device) => ({
+    ...device,
+    step: stepByKey[device.stepKey],
+    reactions: stepByKey[device.stepKey]?.equations || [],
+    massBalance: {
+      inputs: stepByKey[device.stepKey]?.inputs || {},
+      outputs: stepByKey[device.stepKey]?.outputs || {},
+    },
+    energy: stepByKey[device.stepKey]?.utilities || {},
+  }));
+}
+
+function stageProperties(stage = {}) {
+  return {
+    working_volume_L: stage.volumeL || 0,
+    start_cells: stage.startCells || 0,
+    end_cells: stage.endCells || 0,
+    doublings: stage.doublings || 0,
+    power_kw: stage.powerKw || 0,
+    agitation_kwh: stage.agitationKwh || 0,
+    coolant_kg_h: stage.coolantKgH || 0,
+    duration_h: stage.durationH || 0,
+  };
+}
+
+function streamCatalog(sim) {
+  return [
+    stream("s-sensitive", "Sensitive media fraction", "V-101", "DE-102", "v101", "de102", `${fmt(sim.medium.sterileVolumeL)} L`, "media", { components: "IGF-1, proteins, vitamins", temperature_C: 25 }),
+    stream("s-filtered", "Filtered sensitive fraction", "DE-102", "DE-101", "de102", "de101", `${fmt(sim.medium.sterileVolumeL)} L`, "media", { impurities_removed_kg: sim.medium.firstFilterRemovedKg }),
+    stream("s-stable", "Heat-stable fraction", "V-102", "ST-101", "v102", "st101", `${fmt(sim.medium.heatVolumeL)} L`, "media", { components: "amino acids, glucose, salts, trace elements" }),
+    stream("s-sterile-heat", "Heat sterilized fraction", "ST-101", "MX-101", "st101", "mx101", `${fmt(sim.medium.heatVolumeL)} L`, "energy", { temperature_C: 35, heat_kwh: sim.energy.mediaHeatKwh }),
+    stream("s-medium", "Prepared medium", "MX-101", "V-110", "mx101", "v110", fmtKg(sim.medium.mediumKg), "media", { medium_kg: sim.medium.mediumKg, storage_C: 4 }),
+    stream("s-feed-seed", "Cold medium feed", "V-110", "SFR-101", "v110", "sfr101", fmtKg(sim.medium.mediumKg), "media", { temperature_C: 4 }),
+    stream("s-sfr101", "Seed transfer", "SFR-101", "SFR-102", "sfr101", "sfr102", scientific(sim.stages[0]?.endCells || 0), "cells", { cells: sim.stages[0]?.endCells || 0 }),
+    stream("s-sfr102", "Seed transfer", "SFR-102", "RBS-101", "sfr102", "rbs101", scientific(sim.stages[1]?.endCells || 0), "cells", { cells: sim.stages[1]?.endCells || 0 }),
+    stream("s-rbs101", "Seed transfer", "RBS-101", "RBS-102", "rbs101", "rbs102", scientific(sim.stages[2]?.endCells || 0), "cells", { cells: sim.stages[2]?.endCells || 0 }),
+    stream("s-rbs102", "Seed transfer", "RBS-102", "BR-101", "rbs102", "br101", scientific(sim.stages[3]?.endCells || 0), "cells", { cells: sim.stages[3]?.endCells || 0 }),
+    stream("s-br101", "Production inoculum", "BR-101", "BR-102", "br101", "br102", scientific(sim.stages[4]?.endCells || 0), "cells", { cells: sim.stages[4]?.endCells || 0 }),
+    stream("s-o2", "O2 / synthetic air", "Utility", "BR-102", null, "br102", fmtKg(sim.reaction.oxygenKg), "utility", { oxygen_kg: sim.reaction.oxygenKg, synthetic_air_kg: sim.utility.syntheticAirKg }),
+    stream("s-co2", "CO2 vent", "BR-102", "Vent", "br102", null, fmtKg(sim.reaction.co2Kg), "waste", { co2_kg: sim.reaction.co2Kg }),
+    stream("s-broth", "Culture broth S-145", "BR-102", "PM-103", "br102", "pm103", fmtKg(sim.reaction.cultureMassKg), "cells", { biomass_kg: sim.reaction.biomassKg, depleted_medium_kg: sim.reaction.depletedMediumKg, impurities_kg: sim.reaction.impuritiesKg }),
+    stream("s-cool-broth", "Cooled broth", "HX-101", "DS-101", "hx101", "ds101", fmtKg(sim.reaction.cultureMassKg), "energy", { inlet_C: 37, outlet_C: 25 }),
+    stream("s-clarified", "Centrifuge product", "DS-101", "WSH-101", "ds101", "wsh101", fmtKg(sim.downstream.productMassAfterCentrifuge), "cells", { product_biomass_kg: sim.downstream.productBiomassKg }),
+    stream("s-depleted", "Depleted medium S-156", "DS-101", "DE-103", "ds101", "de103", fmtKg(sim.downstream.depletedWasteKg), "waste", { depleted_medium_waste_kg: sim.downstream.depletedWasteKg }),
+    stream("s-depleted-store", "Filtered depleted waste", "DE-103", "V-103", "de103", "v103", fmtKg(sim.downstream.depletedWasteKg), "waste", { stream_id: "S-156" }),
+    stream("s-buffer", "Wash buffer", "Buffer", "WSH-101", null, "wsh101", `${fmt(sim.params.bufferVolumeL)} L`, "utility", { buffer_volume_L: sim.params.bufferVolumeL, inlet_C: 4 }),
+    stream("s-wash-waste", "Wash waste S-154", "WSH-101", "Waste", "wsh101", null, fmtKg(sim.downstream.washWasteKg), "waste", { wash_waste_kg: sim.downstream.washWasteKg }),
+    stream("s-washed", "Washed biomass", "WSH-101", "XD-101", "wsh101", "xd101", fmtKg(sim.downstream.washedProductKg), "cells", { biomass_fraction: sim.params.washBiomassFraction }),
+    stream("s-extruded", "Extruded product", "XD-101", "FL-101", "xd101", "fl101", fmtKg(sim.downstream.washedProductKg), "product", { outlet_C: 4 }),
+    stream("s-containers", "Containers", "Packaging supply", "FL-101", null, "fl101", fmtKg(sim.downstream.containerKg), "utility", { container_kg: sim.downstream.containerKg }),
+    stream("s-packaged", "Packaged product", "FL-101", "Product", "fl101", null, fmtKg(sim.downstream.packagedKg), "product", { packaged_product_kg: sim.downstream.packagedKg }),
+  ];
+}
+
+function stream(key, title, from, to, fromKey, toKey, value, category, properties) {
+  return { key, title, from, to, fromKey, toKey, value, category, properties };
+}
+
 function renderFactoryMap(sim, currentTime) {
   if (!factoryMap) return;
-  const phase = currentPhase(sim, currentTime);
-  const nodes = processStepCatalog(sim);
-  const positions = {
-    media: [10, 18],
-    seed: [30, 18],
-    production: [53, 18],
-    clarification: [76, 18],
-    washing: [76, 54],
-    extrusion: [53, 54],
-    packaging: [30, 54],
-    waste: [10, 54],
-  };
+  const devices = deviceCatalog(sim);
+  const deviceByKey = Object.fromEntries(devices.map((device) => [device.key, device]));
+  const streams = streamCatalog(sim);
   factoryMap.innerHTML = `
-    <svg class="factory-svg" viewBox="0 0 1000 560" role="img" aria-label="Cultivated meat production plant">
+    <svg class="factory-svg detailed" viewBox="0 0 1120 760" role="img" aria-label="Clickable cultivated meat factory map">
       <defs>
-        <linearGradient id="pipeFlow" x1="0" x2="1">
-          <stop offset="0" stop-color="#0a84ff"/>
-          <stop offset="0.55" stop-color="#2ca66f"/>
-          <stop offset="1" stop-color="#b7791f"/>
-        </linearGradient>
         <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#121923" flood-opacity=".18"/>
+          <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#121923" flood-opacity=".18"/>
         </filter>
       </defs>
-      <rect class="factory-floor" x="20" y="20" width="960" height="520" rx="18"/>
-      <path class="factory-pipe main" d="M160 150 H340 C410 150 410 150 480 150 H800 C870 150 880 210 820 260 L785 290"/>
-      <path class="factory-pipe return" d="M785 335 C830 390 790 430 710 430 H575 C515 430 505 430 450 430 H160"/>
-      <path class="factory-pipe waste-line" d="M785 350 C720 500 390 505 160 430"/>
-      <path class="factory-pipe utility-line" d="M92 82 H920"/>
-      <text class="factory-zone-label" x="68" y="70">Utilities: steam · chilled water · synthetic air · CIP</text>
-      <text class="factory-zone-label" x="70" y="515">DSP / packaging / waste routing</text>
-      ${nodes.map((node) => {
-        const [xPct, yPct] = positions[node.key];
-        const x = xPct * 10;
-        const y = yPct * 5.6;
-        const selected = node.key === selectedStepKey;
-        const active = node.key === phase;
-        return `
-          <g class="factory-unit ${selected ? "selected" : ""} ${active ? "active" : ""}" data-select-step="${node.key}" transform="translate(${x}, ${y})" style="--unit-color:${node.color}">
-            <rect class="unit-platform" x="-58" y="38" width="116" height="24" rx="8"/>
-            <rect class="unit-card" x="-72" y="-46" width="144" height="104" rx="12"/>
-            <foreignObject x="-22" y="-34" width="44" height="44">
-              <div class="factory-icon">${iconSvg(node.icon)}</div>
-            </foreignObject>
-            <text class="unit-title" y="24" text-anchor="middle">${escapeHtml(node.title)}</text>
-            <text class="unit-badge" y="42" text-anchor="middle">${escapeHtml(node.badge)}</text>
-            ${active ? '<circle class="active-pulse" cx="54" cy="-34" r="7"/>' : ""}
-          </g>
-        `;
-      }).join("")}
-      <g class="factory-callout">
-        <rect x="690" y="455" width="246" height="50" rx="10"/>
-        <text x="710" y="477">Current: ${escapeHtml(currentPhaseLabel(sim, currentTime))}</text>
-        <text x="710" y="496">${escapeHtml(fmt(currentTime, 1))} h / ${escapeHtml(fmt(sim.totalTimeH, 1))} h</text>
+      <rect class="factory-floor" x="18" y="18" width="1084" height="724" rx="18"/>
+      <text class="factory-zone-label" x="44" y="58">Media preparation</text>
+      <text class="factory-zone-label" x="44" y="330">Cell expansion and production</text>
+      <text class="factory-zone-label" x="44" y="500">Downstream processing</text>
+      <text class="factory-zone-label" x="430" y="708">Waste and side streams</text>
+      ${streams.map((item) => renderStreamPath(item, deviceByKey)).join("")}
+      ${devices.map((device) => renderDeviceNode(device, currentPhase(sim, currentTime))).join("")}
+      <g class="factory-callout compact">
+        <rect x="860" y="34" width="206" height="54" rx="10"/>
+        <text x="878" y="58">${escapeHtml(currentPhaseLabel(sim, currentTime))}</text>
+        <text x="878" y="76">${escapeHtml(fmt(currentTime, 1))} h / ${escapeHtml(fmt(sim.totalTimeH, 1))} h</text>
       </g>
     </svg>
   `;
 }
 
+function renderDeviceNode(device, phase) {
+  const selected = selectedDetail.type === "device" && selectedDetail.key === device.key;
+  const active = device.stepKey === phase;
+  return `
+    <g class="factory-unit detail ${selected ? "selected" : ""} ${active ? "active" : ""}" data-select-device="${device.key}" transform="translate(${device.x}, ${device.y})" style="--unit-color:${device.step?.color || "var(--blue)"}">
+      <rect class="unit-platform" x="-42" y="30" width="84" height="16" rx="6"/>
+      <rect class="unit-card" x="-48" y="-32" width="96" height="72" rx="10"/>
+      <foreignObject x="-16" y="-24" width="32" height="32">
+        <div class="factory-icon compact">${iconSvg(device.icon)}</div>
+      </foreignObject>
+      <text class="unit-title compact" y="20" text-anchor="middle">${escapeHtml(device.id)}</text>
+      <text class="unit-badge compact" y="35" text-anchor="middle">${escapeHtml(device.title)}</text>
+      ${active ? '<circle class="active-pulse" cx="35" cy="-24" r="5"/>' : ""}
+    </g>
+  `;
+}
+
+function renderStreamPath(item, deviceByKey) {
+  const from = item.fromKey ? deviceByKey[item.fromKey] : null;
+  const to = item.toKey ? deviceByKey[item.toKey] : null;
+  const start = from ? [from.x + 48, from.y] : [Math.max((to?.x || 80) - 120, 30), to?.y || 100];
+  const end = to ? [to.x - 48, to.y] : [Math.min((from?.x || 950) + 130, 1080), from?.y || 100];
+  const midX = (start[0] + end[0]) / 2;
+  const selected = selectedDetail.type === "stream" && selectedDetail.key === item.key;
+  const className = `stream-path ${item.category} ${selected ? "selected" : ""}`;
+  const d = `M ${start[0]} ${start[1]} C ${midX} ${start[1]}, ${midX} ${end[1]}, ${end[0]} ${end[1]}`;
+  const labelX = midX;
+  const labelY = (start[1] + end[1]) / 2 - 8;
+  return `
+    <path class="${className}" data-select-stream="${item.key}" d="${d}"/>
+    <g class="stream-label ${selected ? "selected" : ""}" data-select-stream="${item.key}" transform="translate(${labelX}, ${labelY})">
+      <rect x="-54" y="-15" width="108" height="30" rx="7"/>
+      <text y="-2" text-anchor="middle">${escapeHtml(item.title)}</text>
+      <text y="11" text-anchor="middle">${escapeHtml(item.value)}</text>
+    </g>
+  `;
+}
+
+function detailForSelection(sim) {
+  if (selectedDetail.type === "stream") {
+    const item = streamCatalog(sim).find((streamItem) => streamItem.key === selectedDetail.key);
+    if (item) return { type: "stream", item };
+  }
+  const device = deviceCatalog(sim).find((entry) => entry.key === selectedDetail.key) || deviceCatalog(sim).find((entry) => entry.key === "br102");
+  selectedStepKey = device.stepKey;
+  return { type: "device", item: device };
+}
+
 function renderUnitInspector(sim) {
   if (!unitInspector) return;
-  const step = processStepCatalog(sim).find((item) => item.key === selectedStepKey) || processStepCatalog(sim)[0];
-  const inputRows = Object.entries(step.inputs).slice(0, 6)
+  const detail = detailForSelection(sim);
+  const item = detail.item;
+  const color = detail.type === "stream" ? streamColor(item.category) : item.step?.color || "var(--blue)";
+  const propertyRows = Object.entries(item.properties || {}).slice(0, 10)
     .map(([key, value]) => `<li><span>${escapeHtml(key)}</span><strong>${formatValue(value)}</strong></li>`)
     .join("");
-  const outputRows = Object.entries(step.outputs).slice(0, 6)
-    .map(([key, value]) => `<li><span>${escapeHtml(key)}</span><strong>${formatValue(value)}</strong></li>`)
-    .join("");
+  const reactions = detail.type === "device"
+    ? item.reactions
+    : streamEquations(item, sim);
+  const balanceRows = detail.type === "device"
+    ? balanceRowsHtml(item.massBalance)
+    : streamBalanceRows(item);
+  const energyRows = detail.type === "device"
+    ? Object.entries(item.energy || {}).map(([key, value]) => `<li><span>${escapeHtml(key)}</span><strong>${formatValue(value)}</strong></li>`).join("")
+    : `<li><span>category</span><strong>${escapeHtml(item.category)}</strong></li>`;
   unitInspector.innerHTML = `
-    <div class="inspector-top" style="--unit-color:${step.color}">
-      <span class="inspector-icon">${iconSvg(step.icon)}</span>
+    <div class="inspector-top" style="--unit-color:${color}">
+      <span class="inspector-icon">${detail.type === "stream" ? '<span class="stream-dot"></span>' : iconSvg(item.icon)}</span>
       <div>
-        <span>${escapeHtml(step.badge)}</span>
-        <h3>${escapeHtml(step.title)}</h3>
+        <span>${detail.type === "stream" ? `${escapeHtml(item.from)} -> ${escapeHtml(item.to)}` : escapeHtml(item.id)}</span>
+        <h3>${escapeHtml(item.title)}</h3>
       </div>
     </div>
-    <p>${escapeHtml(step.unit)}</p>
-    <strong class="inspector-value">${escapeHtml(step.value)}</strong>
-    <div class="inspector-columns">
-      <div>
-        <h4>Inputs</h4>
-        <ul>${inputRows}</ul>
-      </div>
-      <div>
-        <h4>Outputs</h4>
-        <ul>${outputRows}</ul>
-      </div>
+    <p>${detail.type === "stream" ? "Clickable stream" : escapeHtml(item.type)} · ${escapeHtml(item.value)}</p>
+    <div class="inspector-section">
+      <h4>Physical properties</h4>
+      <ul class="inspector-list">${propertyRows}</ul>
     </div>
-    <h4>Key equation</h4>
-    <code>${escapeHtml(step.equations[0])}</code>
+    <div class="inspector-section">
+      <h4>Chemical / physical equations</h4>
+      ${reactions.slice(0, 6).map((equation) => `<code>${escapeHtml(equation)}</code>`).join("")}
+    </div>
+    <div class="inspector-section">
+      <h4>Mass balance</h4>
+      <ul class="inspector-list">${balanceRows}</ul>
+    </div>
+    <div class="inspector-section">
+      <h4>Energy / utilities</h4>
+      <ul class="inspector-list">${energyRows || '<li><span>energy</span><strong>no direct duty modeled</strong></li>'}</ul>
+    </div>
     <div class="inspector-actions">
-      <button class="secondary-button" type="button" data-show-equations="${step.key}">Equations</button>
-      <button class="primary-button" type="button" data-step-export="${step.key}">Export step</button>
+      ${detail.type === "device" ? `<button class="secondary-button" type="button" data-show-equations="${item.stepKey}">Open chemistry</button><button class="primary-button" type="button" data-step-export="${item.stepKey}">Export step</button>` : `<button class="secondary-button" type="button" data-select-related-device="${item.toKey || item.fromKey}">Open equipment</button>`}
     </div>
+  `;
+}
+
+function streamColor(category) {
+  return {
+    media: "var(--blue)",
+    cells: "var(--green)",
+    energy: "var(--amber)",
+    utility: "#5c6ac4",
+    waste: "var(--red)",
+    product: "#0f9f8f",
+  }[category] || "var(--blue)";
+}
+
+function streamEquations(item) {
+  const base = [`stream_mass_or_count = upstream_output routed to downstream_input`, `selected_stream = ${item.title}: ${item.value}`];
+  if (item.category === "media") base.push("component_kg = concentration_g_L * volume_L / 1000");
+  if (item.category === "cells") base.push("biomass_kg = cells * cell_mass_kg * viability");
+  if (item.category === "energy") base.push("Q_kWh = mass_kg * 4.184 * delta_T / 3600");
+  if (item.category === "waste") base.push("waste_total = depleted_medium_waste + wash_waste + removed_impurities");
+  if (item.category === "product") base.push("packaged_mass = washed_product + container_mass");
+  return base;
+}
+
+function balanceRowsHtml(balance = {}) {
+  const rows = [];
+  Object.entries(balance.inputs || {}).slice(0, 5).forEach(([key, value]) => rows.push(`<li><span>in: ${escapeHtml(key)}</span><strong>${formatValue(value)}</strong></li>`));
+  Object.entries(balance.outputs || {}).slice(0, 5).forEach(([key, value]) => rows.push(`<li><span>out: ${escapeHtml(key)}</span><strong>${formatValue(value)}</strong></li>`));
+  return rows.join("") || '<li><span>balance</span><strong>tracked in step payload</strong></li>';
+}
+
+function streamBalanceRows(item) {
+  return `
+    <li><span>from</span><strong>${escapeHtml(item.from)}</strong></li>
+    <li><span>to</span><strong>${escapeHtml(item.to)}</strong></li>
+    <li><span>value</span><strong>${escapeHtml(item.value)}</strong></li>
   `;
 }
 
@@ -1300,8 +1444,11 @@ function dataForExport(scope = "full") {
     utility: sim.utility,
     equations: allEquationEntries(sim),
     processSteps: processStepCatalog(sim),
+    devices: deviceCatalog(sim),
+    streams: streamCatalog(sim),
     modelComparisons: modelComparisons(sim),
     selectedProcessStep: selectedStepKey,
+    selectedFactoryDetail: selectedDetail,
     referenceAssets,
   };
   if (scope === "parameters") return { parameters: report.parameters };
@@ -1322,7 +1469,7 @@ function dataForExport(scope = "full") {
   if (scope === "stages") return { stages: report.stages, processSteps: report.processSteps };
   if (scope === "references") return { referenceAssets: report.referenceAssets };
   if (scope === "model-match") return { modelComparisons: report.modelComparisons };
-  if (scope === "plant") return { processSteps: report.processSteps, modelComparisons: report.modelComparisons };
+  if (scope === "plant") return { devices: report.devices, streams: report.streams, processSteps: report.processSteps, modelComparisons: report.modelComparisons };
   if (scope === "exports") return report;
   return report;
 }
@@ -1641,18 +1788,30 @@ document.addEventListener("click", (event) => {
 });
 
 factoryMap?.addEventListener("click", (event) => {
-  const unit = event.target.closest("[data-select-step]");
-  if (!unit) return;
-  selectedStepKey = unit.dataset.selectStep;
+  const stream = event.target.closest("[data-select-stream]");
+  const device = event.target.closest("[data-select-device]");
+  if (stream) {
+    selectedDetail = { type: "stream", key: stream.dataset.selectStream };
+  } else if (device) {
+    selectedDetail = { type: "device", key: device.dataset.selectDevice };
+  } else {
+    return;
+  }
   render();
 });
 
 unitInspector?.addEventListener("click", (event) => {
   const equationsButton = event.target.closest("[data-show-equations]");
-  if (!equationsButton) return;
-  selectedStepKey = equationsButton.dataset.showEquations;
-  setActiveView("equations");
-  render();
+  const relatedDevice = event.target.closest("[data-select-related-device]");
+  if (equationsButton) {
+    selectedStepKey = equationsButton.dataset.showEquations;
+    setActiveView("equations");
+    render();
+  }
+  if (relatedDevice && relatedDevice.dataset.selectRelatedDevice) {
+    selectedDetail = { type: "device", key: relatedDevice.dataset.selectRelatedDevice };
+    render();
+  }
 });
 
 processDiagram.addEventListener("click", (event) => {

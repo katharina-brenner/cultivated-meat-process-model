@@ -47,7 +47,7 @@ print(report["energy_kwh"])
 
 ## Web app
 
-Open [webapp/index.html](/Users/katharinajuliabrenner/Documents/GitHub/cultivated-meat-process-model/webapp/index.html) in a browser to use the interactive process cockpit.
+Open [webapp/index.html](/Users/katharinajuliabrenner/Documents/GitHub/cultivated-meat-process-model/webapp/index.html) in a browser to use the interactive process twin.
 For browser-safe local use, run a static server from the repository root:
 
 ```bash
@@ -59,7 +59,7 @@ Then open `http://127.0.0.1:8765/webapp/index.html`.
 # What the app shows
 
 - live cultivation controls for final STR volume, peak viable cell density, doubling time, culture duration, cell mass, viability, media composition, sterilization split, biomass recovery, wash fraction, and buffer volume
-- click-through views for `Plant`, `Process`, `Model`, `Equations`, and `Exports`
+- click-through views for `Factory`, `Timeline`, `Balances`, `Chemistry`, and `Export`
 - Celonis-like process diagram and factory map with equipment icons for media prep, seed expansion, production STR, clarification, washing, extrusion, packaging, and waste
 - clickable plant units with a live unit inspector for inputs, outputs, utilities, equations, and step export
 - model audit table comparing the live simulator against the Python/paper baseline values
@@ -71,7 +71,7 @@ Then open `http://127.0.0.1:8765/webapp/index.html`.
 
 # Right-click export
 
-Right-click anywhere in the cockpit to download the current model state as JSON,
+Right-click anywhere in the process twin to download the current model state as JSON,
 CSV, or Markdown. The same menu can copy the active equations.
 
 # Export all and step export

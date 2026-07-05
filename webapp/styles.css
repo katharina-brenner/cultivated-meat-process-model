@@ -217,7 +217,7 @@ select {
     linear-gradient(145deg, rgba(255,255,255,0.92), rgba(234,238,243,0.84)),
     repeating-linear-gradient(0deg, rgba(23,23,28,0.035) 0 1px, transparent 1px 38px),
     repeating-linear-gradient(90deg, rgba(23,23,28,0.03) 0 1px, transparent 1px 52px);
-  overflow: hidden;
+  overflow: auto;
 }
 
 .factory-svg {
@@ -225,6 +225,11 @@ select {
   width: 100%;
   height: 100%;
   min-height: 540px;
+}
+
+.factory-svg.detailed {
+  min-width: 1080px;
+  min-height: 720px;
 }
 
 .factory-floor {
@@ -273,6 +278,10 @@ select {
   outline: none;
 }
 
+.factory-unit.detail .unit-card {
+  fill: rgba(255, 255, 255, 0.96);
+}
+
 .unit-card {
   fill: rgba(255, 255, 255, 0.94);
   stroke: rgba(23, 23, 28, 0.14);
@@ -314,15 +323,98 @@ select {
   stroke-linejoin: round;
 }
 
+.factory-icon.compact {
+  width: 31px;
+  height: 31px;
+  border-radius: 7px;
+}
+
+.factory-icon.compact svg {
+  width: 18px;
+  height: 18px;
+}
+
 .unit-title {
   fill: #17171c;
   font-size: 14px;
   font-weight: 750;
 }
 
+.unit-title.compact {
+  font-size: 10px;
+  font-weight: 800;
+}
+
 .unit-badge {
   fill: rgba(23, 23, 28, 0.55);
   font-size: 11px;
+}
+
+.unit-badge.compact {
+  font-size: 8px;
+}
+
+.stream-path {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.62;
+  cursor: pointer;
+}
+
+.stream-path.media {
+  stroke: #0a84ff;
+}
+
+.stream-path.cells {
+  stroke: #2ca66f;
+}
+
+.stream-path.energy {
+  stroke: #b7791f;
+  stroke-dasharray: 8 8;
+}
+
+.stream-path.utility {
+  stroke: #5c6ac4;
+  stroke-dasharray: 10 8;
+}
+
+.stream-path.waste {
+  stroke: #d14b45;
+  stroke-dasharray: 8 7;
+}
+
+.stream-path.product {
+  stroke: #0f9f8f;
+}
+
+.stream-path:hover,
+.stream-path.selected {
+  opacity: 1;
+  stroke-width: 8;
+}
+
+.stream-label {
+  cursor: pointer;
+}
+
+.stream-label rect {
+  fill: rgba(255, 255, 255, 0.88);
+  stroke: rgba(23, 23, 28, 0.1);
+}
+
+.stream-label.selected rect,
+.stream-label:hover rect {
+  stroke: #17171c;
+  stroke-width: 1.5;
+}
+
+.stream-label text {
+  fill: #17171c;
+  font-size: 7.5px;
+  font-weight: 650;
 }
 
 .active-pulse {
@@ -339,6 +431,10 @@ select {
   fill: #17171c;
   font-size: 13px;
   font-weight: 650;
+}
+
+.factory-callout.compact text {
+  font-size: 12px;
 }
 
 .unit-inspector {
@@ -425,12 +521,45 @@ select {
 
 .unit-inspector code {
   display: block;
+  margin-bottom: 6px;
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(245, 245, 247, 0.88);
   overflow-wrap: anywhere;
   white-space: normal;
+}
+
+.inspector-section {
+  margin-top: 14px;
+}
+
+.inspector-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inspector-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.inspector-list span {
+  color: var(--muted);
+}
+
+.stream-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: currentColor;
 }
 
 .inspector-actions {
