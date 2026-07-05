@@ -13,6 +13,7 @@
   --amber: #a96c12;
   --red: #c3423f;
   --shadow: 0 18px 46px rgba(17, 24, 31, 0.08);
+  --shadow-strong: 0 28px 80px rgba(17, 24, 31, 0.12);
   --radius: 8px;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
 }
@@ -108,8 +109,8 @@ select {
 }
 
 .topbar {
-  position: sticky;
-  top: 18px;
+  position: relative;
+  top: auto;
   z-index: 20;
   display: flex;
   align-items: center;
@@ -169,7 +170,7 @@ select {
 
 .view-tabs {
   position: sticky;
-  top: 100px;
+  top: 10px;
   z-index: 19;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -199,6 +200,10 @@ select {
 
 .view-panel:not(.active) {
   display: none !important;
+}
+
+.view-panel {
+  scroll-margin-top: 76px;
 }
 
 .metric-grid.view-panel.active,
@@ -247,8 +252,9 @@ select {
   min-height: 640px;
   padding: 18px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.94), rgba(246,249,251,0.86)),
+    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(244,248,251,0.9)),
     repeating-linear-gradient(90deg, rgba(20,28,36,0.028) 0 1px, transparent 1px 54px);
+  box-shadow: var(--shadow-strong);
 }
 
 .factory-control .panel-heading h2 {
@@ -262,34 +268,114 @@ select {
   align-items: stretch;
 }
 
+.plant-insight-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.plant-insight-card {
+  min-width: 0;
+  min-height: 84px;
+  padding: 12px;
+  border: 1px solid rgba(13, 23, 33, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,249,252,0.86));
+  box-shadow: 0 12px 30px rgba(17, 24, 31, 0.055);
+}
+
+.plant-insight-card::before {
+  content: "";
+  display: block;
+  width: 34px;
+  height: 3px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  background: var(--blue);
+}
+
+.plant-insight-card.watch::before {
+  background: var(--amber);
+}
+
+.plant-insight-card.critical::before {
+  background: var(--red);
+}
+
+.plant-insight-card span,
+.plant-insight-card small {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 720;
+  text-transform: uppercase;
+}
+
+.plant-insight-card strong {
+  display: block;
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.plant-insight-card small {
+  font-size: 11px;
+  font-weight: 560;
+  line-height: 1.3;
+  text-transform: none;
+}
+
 .factory-map {
   position: relative;
-  min-height: 540px;
+  min-height: 640px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background:
     linear-gradient(145deg, rgba(255,255,255,0.92), rgba(234,238,243,0.84)),
     repeating-linear-gradient(0deg, rgba(23,23,28,0.035) 0 1px, transparent 1px 38px),
     repeating-linear-gradient(90deg, rgba(23,23,28,0.03) 0 1px, transparent 1px 52px);
-  overflow: hidden;
+  overflow: auto;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+}
+
+.factory-map::-webkit-scrollbar {
+  height: 9px;
+  width: 9px;
+}
+
+.factory-map::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(255,255,255,0.75);
+  border-radius: 999px;
+  background: rgba(16,24,32,0.22);
 }
 
 .factory-svg {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 540px;
+  min-height: 640px;
 }
 
 .factory-svg.detailed {
-  aspect-ratio: 1120 / 760;
+  aspect-ratio: 1400 / 920;
   min-width: 0;
-  min-height: 0;
+  min-height: 700px;
 }
 
 .factory-floor {
   fill: rgba(255, 255, 255, 0.58);
   stroke: rgba(23, 23, 28, 0.1);
+}
+
+.factory-zone {
+  fill: rgba(255, 255, 255, 0.34);
+  stroke: rgba(13, 23, 33, 0.08);
 }
 
 .factory-pipe {
@@ -322,8 +408,8 @@ select {
 }
 
 .factory-zone-label {
-  fill: rgba(23, 23, 28, 0.52);
-  font-size: 13px;
+  fill: rgba(23, 23, 28, 0.58);
+  font-size: 15px;
   font-weight: 780;
   text-transform: uppercase;
 }
@@ -381,14 +467,14 @@ select {
 }
 
 .factory-icon.compact {
-  width: 31px;
-  height: 31px;
+  width: 38px;
+  height: 38px;
   border-radius: 7px;
 }
 
 .factory-icon.compact svg {
-  width: 18px;
-  height: 18px;
+  width: 21px;
+  height: 21px;
 }
 
 .unit-title {
@@ -398,7 +484,7 @@ select {
 }
 
 .unit-title.compact {
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 800;
 }
 
@@ -408,7 +494,7 @@ select {
 }
 
 .unit-badge.compact {
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .stream-path {
@@ -501,20 +587,43 @@ select {
 }
 
 .stream-label rect {
-  fill: rgba(255, 255, 255, 0.88);
-  stroke: rgba(23, 23, 28, 0.1);
+  fill: rgba(15, 22, 30, 0.9);
+  stroke: rgba(255, 255, 255, 0.52);
 }
 
 .stream-label.selected rect,
 .stream-label:hover rect {
-  stroke: #17171c;
-  stroke-width: 1.5;
+  fill: #ffffff;
+  stroke: #0a84ff;
+  stroke-width: 2;
 }
 
 .stream-label text {
-  fill: #17171c;
-  font-size: 7.5px;
-  font-weight: 650;
+  fill: #ffffff;
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.stream-label.selected text,
+.stream-label:hover text {
+  fill: #101418;
+}
+
+.stream-popover {
+  fill: rgba(255, 255, 255, 0.96) !important;
+  stroke: rgba(10, 132, 255, 0.34) !important;
+}
+
+.stream-popover-title,
+.stream-popover-value {
+  fill: #101418 !important;
+  font-size: 10px !important;
+  font-weight: 760 !important;
+}
+
+.stream-popover-value {
+  fill: rgba(16, 20, 24, 0.62) !important;
+  font-weight: 650 !important;
 }
 
 .active-pulse {
@@ -1735,6 +1844,10 @@ td:first-child {
     grid-template-columns: 1fr;
   }
 
+  .plant-insight-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .time-balance-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1743,8 +1856,8 @@ td:first-child {
     grid-template-columns: 1fr;
   }
 
-  .view-tabs {
-    top: 0;
+  .factory-svg.detailed {
+    min-width: 1040px;
   }
 
   .factory-layout {
@@ -1785,7 +1898,6 @@ td:first-child {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
-    top: 10px;
   }
 
   .view-tabs {
@@ -1830,7 +1942,15 @@ td:first-child {
 
   .factory-map,
   .factory-svg {
-    min-height: 500px;
+    min-height: 560px;
+  }
+
+  .factory-svg.detailed {
+    min-width: 920px;
+  }
+
+  .plant-insight-strip {
+    grid-template-columns: 1fr;
   }
 
   .diagram-grid {
