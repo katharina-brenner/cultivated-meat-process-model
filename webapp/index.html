@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cultivated Meat Process Twin</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell" id="app">
+      <aside class="control-panel" data-export-scope="parameters">
+        <div class="panel-title">
+          <p class="eyebrow">Cell cultivation</p>
+          <h1>Process Twin</h1>
+        </div>
+
+        <div class="preset-row" data-export-scope="scenarios">
+          <button type="button" class="preset-button active" data-preset="main">90:10</button>
+          <button type="button" class="preset-button" data-preset="heat">50:50</button>
+          <button type="button" class="preset-button" data-preset="local">Local</button>
+          <button type="button" class="preset-button" data-preset="str">STR only</button>
+        </div>
+
+        <div class="control-group">
+          <h2>Biology</h2>
+          <label>
+            <span>Final STR volume</span>
+            <output id="finalVolumeOut">20000 L</output>
+            <input id="finalVolume" type="range" min="2000" max="30000" step="500" value="20000" />
+          </label>
+          <label>
+            <span>Peak viable cell density</span>
+            <output id="peakVcdOut">5.0e7 cells/mL</output>
+            <input id="peakVcd" type="range" min="10000000" max="100000000" step="1000000" value="50000000" />
+          </label>
+          <label>
+            <span>Doubling time</span>
+            <output id="doublingOut">20 h</output>
+            <input id="doublingTime" type="range" min="16" max="65" step="1" value="20" />
+          </label>
+          <label>
+            <span>Culture duration per stage</span>
+            <output id="stageDurationOut">120 h</output>
+            <input id="stageDuration" type="range" min="48" max="168" step="6" value="120" />
+          </label>
+          <label>
+            <span>Cell mass</span>
+            <output id="cellMassOut">2.0 ng</output>
+            <input id="cellMass" type="range" min="0.8" max="4" step="0.1" value="2" />
+          </label>
+          <label>
+            <span>Culture viability factor</span>
+            <output id="viabilityOut">99.5%</output>
+            <input id="viability" type="range" min="70" max="100" step="0.5" value="99.5" />
+          </label>
+        </div>
+
+        <div class="control-group">
+          <h2>Medium</h2>
+          <label>
+            <span>Sterile filtration share</span>
+            <output id="sterileOut">90%</output>
+            <input id="sterileFraction" type="range" min="50" max="95" step="1" value="90" />
+          </label>
+          <label>
+            <span>Glucose</span>
+            <output id="glucoseOut">4.50 g/L</output>
+            <input id="glucose" type="range" min="1" max="10" step="0.1" value="4.5" />
+          </label>
+          <label>
+            <span>Amino acids</span>
+            <output id="aminoOut">1.27 g/L</output>
+            <input id="aminoAcids" type="range" min="0.2" max="5" step="0.01" value="1.27" />
+          </label>
+          <label>
+            <span>Proteins</span>
+            <output id="proteinOut">3.00 g/L</output>
+            <input id="proteins" type="range" min="0" max="10" step="0.1" value="3" />
+          </label>
+        </div>
+
+        <div class="control-group">
+          <h2>Downstream</h2>
+          <label>
+            <span>Biomass recovery</span>
+            <output id="recoveryOut">95%</output>
+            <input id="recovery" type="range" min="75" max="99" step="0.5" value="95" />
+          </label>
+          <label>
+            <span>Washed biomass fraction</span>
+            <output id="washFractionOut">90%</output>
+            <input id="washFraction" type="range" min="70" max="98" step="1" value="90" />
+          </label>
+          <label>
+            <span>Buffer volume</span>
+            <output id="bufferOut">2000 L</output>
+            <input id="bufferVolume" type="range" min="200" max="5000" step="100" value="2000" />
+          </label>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Cultivated meat manufacturing twin</p>
+            <h2 id="scenarioTitle">Main process 90:10</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="playButton" class="secondary-button icon-button" type="button" aria-label="Play process animation">
+              <span class="button-icon">▶</span>
+              <span id="playButtonText">Play</span>
+            </button>
+            <button id="downloadButton" class="primary-button icon-button" type="button" aria-label="Export complete process report">
+              <span class="button-icon">↓</span>
+              <span>Export all</span>
+            </button>
+          </div>
+        </header>
+
+        <nav class="view-tabs" aria-label="Dashboard views">
+          <button type="button" class="view-tab active" data-view="plant">Factory</button>
+          <button type="button" class="view-tab" data-view="process">Timeline</button>
+          <button type="button" class="view-tab" data-view="model">Balances</button>
+          <button type="button" class="view-tab" data-view="equations">Chemistry</button>
+          <button type="button" class="view-tab" data-view="exports">Export</button>
+        </nav>
+
+        <section class="panel factory-control view-panel active" data-view-panel="plant" data-export-scope="plant">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Factory map</p>
+              <h2>Select equipment or stream for details</h2>
+            </div>
+            <span id="factoryStatus">Live baseline</span>
+          </div>
+          <div class="factory-layout">
+            <div id="factoryMap" class="factory-map" aria-label="Clickable production plant"></div>
+            <aside id="unitInspector" class="unit-inspector" aria-label="Selected unit details"></aside>
+          </div>
+          <div id="modelMatchStrip" class="model-match-strip"></div>
+        </section>
+
+        <section class="metric-grid view-panel active" data-view-panel="plant" data-export-scope="summary">
+          <article class="metric">
+            <span>Packaged mass</span>
+            <strong id="packagedMass">0 kg</strong>
+          </article>
+          <article class="metric">
+            <span>Final biomass</span>
+            <strong id="biomassMass">0 kg</strong>
+          </article>
+          <article class="metric">
+            <span>Total process time</span>
+            <strong id="totalTime">0 h</strong>
+          </article>
+          <article class="metric">
+            <span>Energy estimate</span>
+            <strong id="energyTotal">0 kWh</strong>
+          </article>
+          <article class="metric">
+            <span>Medium demand</span>
+            <strong id="mediumDemand">0 kg</strong>
+          </article>
+        </section>
+
+        <section class="hero-surface view-panel" data-view-panel="process" data-export-scope="process">
+          <div class="hero-copy">
+            <div>
+              <p class="eyebrow">Timeline view</p>
+              <h3>End-to-end biomass manufacturing</h3>
+            </div>
+            <div class="utility-rail" id="utilityRail"></div>
+          </div>
+
+          <div class="process-stage" id="processDiagram" aria-label="Process diagram"></div>
+
+          <div class="plant-preview">
+            <div class="preview-heading">
+              <span>Spatial plant view</span>
+              <strong id="activeUnit">Media prep</strong>
+            </div>
+            <canvas id="processCanvas" width="1400" height="620" aria-label="Simplified process view"></canvas>
+          </div>
+
+          <div class="time-strip">
+            <label>
+              <span>Process time</span>
+              <output id="timeOut">0 h</output>
+              <input id="timeSlider" type="range" min="0" max="720" step="1" value="0" />
+            </label>
+            <div class="time-meta">
+              <span id="playExplanation">Play animates the process clock at 18 process-hours per second.</span>
+              <strong id="timeDetail">0 h elapsed · 0 h remaining</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="analysis-grid view-panel" data-view-panel="model">
+          <article class="panel" data-export-scope="timeline">
+            <div class="panel-heading">
+              <h2>Time Response</h2>
+              <span id="currentStage">Media prep</span>
+            </div>
+            <canvas id="timelineCanvas" width="980" height="320" aria-label="Cell count and energy over time"></canvas>
+          </article>
+
+          <article class="panel" data-export-scope="streams">
+            <div class="panel-heading">
+              <h2>Inputs and Outputs</h2>
+              <span>kg per batch</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Stream</th>
+                    <th>In</th>
+                    <th>Out</th>
+                  </tr>
+                </thead>
+                <tbody id="streamTable"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel model-audit view-panel" data-view-panel="model" data-export-scope="model-match">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Python model audit</p>
+              <h2>Live simulator vs paper/Python baseline</h2>
+            </div>
+            <span id="modelAuditStatus">checking</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Value</th>
+                  <th>Live app</th>
+                  <th>Python baseline</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="modelAuditTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="analysis-grid bottom-grid view-panel" data-view-panel="equations">
+          <article class="panel" data-export-scope="equations">
+            <div class="panel-heading">
+              <h2>Chemical, Physical and Mass Equations</h2>
+              <span>active model</span>
+            </div>
+            <div id="equationList" class="equation-list"></div>
+          </article>
+
+          <article class="panel" data-export-scope="stages">
+            <div class="panel-heading">
+              <h2>Process Steps</h2>
+              <span id="stepCount">0 steps</span>
+            </div>
+            <div id="stageCards" class="stage-list"></div>
+          </article>
+        </section>
+
+        <section class="panel export-center view-panel" data-view-panel="exports" data-export-scope="exports">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Reports</p>
+              <h2>Download the model at any level</h2>
+            </div>
+            <span>HTML, JSON, CSV, Markdown</span>
+          </div>
+          <div class="export-actions">
+            <button id="exportHtmlButton" class="primary-button icon-button" type="button">
+              <span class="button-icon">↓</span>
+              <span>Complete HTML</span>
+            </button>
+            <button id="exportJsonButton" class="secondary-button icon-button" type="button">
+              <span class="button-icon">{ }</span>
+              <span>Full JSON</span>
+            </button>
+            <button id="exportCsvButton" class="secondary-button icon-button" type="button">
+              <span class="button-icon">#</span>
+              <span>Full CSV</span>
+            </button>
+            <button id="exportMdButton" class="secondary-button icon-button" type="button">
+              <span class="button-icon">M</span>
+              <span>Markdown</span>
+            </button>
+          </div>
+          <div id="stepExportList" class="step-export-list"></div>
+        </section>
+
+        <section class="panel reference-panel view-panel" data-view-panel="exports" data-export-scope="references">
+          <div class="panel-heading">
+            <h2>Reference Process Material</h2>
+            <span>from uploaded ZIPs</span>
+          </div>
+          <div id="referenceAssets" class="reference-grid"></div>
+        </section>
+      </section>
+    </main>
+
+    <nav id="contextMenu" class="context-menu" hidden>
+      <button type="button" data-action="json">Download scope JSON</button>
+      <button type="button" data-action="csv">Download scope CSV</button>
+      <button type="button" data-action="markdown">Download scope report</button>
+      <button type="button" data-action="copy-equations">Copy equations</button>
+    </nav>
+
+    <div id="exportToast" class="export-toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

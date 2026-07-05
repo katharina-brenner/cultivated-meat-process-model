@@ -2,32 +2,79 @@
 
 plant:
   name: baseline
+  scenario: main_90_10
   annual_production_kg: 1_000_000
   operating_days: 330
 
+flowsheet:
+  include_extrusion: true
+  include_packaging: true
+
 media_prep:
-  batch_volume_L: 10_000
-  batches_per_day: 4
+  batch_volume_L: 20_000
+  batches_per_day: 1
+  medium_density_kg_L: 0.995379515
+  sterile_filtration_fraction: 0.90
+  storage_temperature_C: 4.0
+  mixing_duration_min: 60
+  mixing_specific_power_kw_m3: 0.1
+  transfer_duration_h: 5
+  filtration_flux_L_m2_h: 250
+  sterilization_temperature_C: 121
+  composition_g_L:
+    amino_acids: 1.27
+    vitamins: 2.94e-2
+    salts: 9.59
+    proteins: 3.00
+    trace_elements: 5.01e-3
+    glucose: 4.50
+    growth_factors_igf1: 5.00e-6
 
 seed_train:
-  stages: 3
   doubling_time_h: 24
-  inoculum_fraction: 0.10
+  stage_duration_h: 120
+  inoculum_volume_L: 0.002
+  air_used_for_purging_and_vessel_filling_kg: 33.3
 
 production_bioreactor:
   working_volume_L: 20_000
-  runs_per_day: 2
-  culture_duration_h: 168
-  peak_viable_cell_density: 2.0e7  # cells/mL
+  runs_per_day: 0.0326
+  culture_duration_h: 120
+  peak_viable_cell_density: 5.0e7  # cells/mL
+  synthetic_air_kg_per_batch: 11_506.78
+  oxygen_consumed_kg: 995
+  carbon_dioxide_generated_kg: 1_990
+  outlet_stream_id: S-145
+  outlet_composition_kg:
+    biomass: 1_990
+    depleted_medium: 15_930
+    impurities: 1_000
 
-harvest:
-  harvest_efficiency: 0.95
-  wet_mass_fraction: 0.25
+clarification:
+  transfer_flow_L_h: 4_000
+  biomass_recovery: 0.95
+  impurity_to_product: 0.05
+  product_biomass_mass_fraction: 0.3839
+  solids_concentration_kg_L: 0.4
+  power_kw: 35.64
+  heat_dissipation_fraction: 0.25
+  initial_chilled_water_kg_h: 8_892.12
+  centrifuge_chilled_water_kg_h: 8_936.11
+  waste_filter_area_m2: 20
+  waste_filter_cartridges: 2
+  waste_storage_tank_volume_L: 14_402.33
 
-formulation:
-  binder_fraction: 0.05
-  fat_fraction: 0.08
+washing:
+  buffer_volume_L: 2_000
+  buffer_temperature_C: 4.0
+  product_biomass_mass_fraction: 0.90
+
+extrusion:
+  screw_velocity_rpm: 200
+  outlet_temperature_C: 4.0
+  coolant_flow_kg_h: 0.31
 
 packaging:
-  pack_size_kg: 0.25
-  packaging_loss: 0.01
+  product_per_entity_kg: 1.0
+  container_kg: 0.01
+  packaging_loss: 0.0
