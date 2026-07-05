@@ -1,6 +1,6 @@
-# cultivated-meat-process-model
+# insilico dynamics process model
 
-Process model for cultivated meat production, from media preparation through packaging.
+Process model for cultivated meat production, from media preparation through packaging, exposed as the `insilico dynamics` bioprocess facility interface.
 The baseline is aligned with Brenner et al. (2026), "Decoding cultured meat
 manufacturing: a full process model to identify scale-up bottlenecks."
 
@@ -47,7 +47,7 @@ print(report["energy_kwh"])
 
 ## Web app
 
-Open [webapp/index.html](/Users/katharinajuliabrenner/Documents/GitHub/cultivated-meat-process-model/webapp/index.html) in a browser to use the interactive process twin.
+Open [webapp/index.html](/Users/katharinajuliabrenner/Documents/GitHub/cultivated-meat-process-model/webapp/index.html) in a browser to use the interactive `insilico dynamics` process facility.
 For browser-safe local use, run a static server from the repository root:
 
 ```bash
@@ -59,30 +59,43 @@ Then open `http://127.0.0.1:8765/webapp/index.html`.
 # What the app shows
 
 - live cultivation controls for final STR volume, peak viable cell density, doubling time, culture duration, cell mass, viability, media composition, sterilization split, biomass recovery, wash fraction, and buffer volume
-- click-through views for `Factory`, `Timeline`, `Balances`, `Chemistry`, and `Export`
+- click-through views for `Factory`, `Timeline`, `Data`, and `Downloads`
+- first-page factory map with every major equipment item and animated process stream from media prep through packaged product
+- clickable equipment and streams with a live inspector for physical properties, reactions, mass balances, utilities, and connected objects
 - Celonis-like process diagram and factory map with equipment icons for media prep, seed expansion, production STR, clarification, washing, extrusion, packaging, and waste
-- clickable plant units with a live unit inspector for inputs, outputs, utilities, equations, and step export
 - model audit table comparing the live simulator against the Python/paper baseline values
 - simplified spatial factory view with 3D-style vessels and utility rail
-- process-time slider, sticky Play/Pause control, elapsed-time readout, remaining-time readout, and active-unit label
-- live time response for biomass and cumulative energy
-- inputs, outputs, chemical equations, mass equations, energy equations, utilities, and stage-level outputs
-- uploaded ZIP reference screenshots shown as linked reference tiles
+- process-time slider, sticky Play/Pause control, elapsed-time readout, remaining-time readout, active-unit label, and an explicit time-balance strip where media prep + seed train + production + downstream + closeout equals the displayed total
+- Timeline `PFD plant view` with chemical-engineering style symbols for tanks, sterile filters, heat exchangers, stirred-tank reactors, pumps, centrifugation, washing, extrusion, filling, utilities, waste, and product flow
+- compact live time response for biomass and cumulative energy with process-segment bands and matching energy totals
+- full inputs, outputs, chemical equations, mass equations, energy equations, utilities, stream tables, equipment tables, audit data, and stage-level outputs in the downloadable data package
+- export scenario selection inside `Downloads`, including the 90:10 sterile split, 50:50 sterile split, local-scale variation, and STR-only expansion
+- uploaded ZIP reference screenshots kept out of the visible page preview; they are available only as text download links and in the downloadable manifest
 
 # Right-click export
 
-Right-click anywhere in the process twin to download the current model state as JSON,
+Right-click anywhere in the process facility to download the current model state as JSON,
 CSV, or Markdown. The same menu can copy the active equations.
 
-# Export all and step export
+# Downloads and step export
 
-The blue `Export all` button downloads a complete HTML report with parameters,
-summary metrics, all chemical/mass/energy equations, every process-step input
-and output, utility data, reference-asset links, and the full JSON payload.
+The blue `Export model` button downloads a complete HTML report with
+parameters, summary metrics, all chemical/mass/energy equations, every
+process-step input and output, utility data, reference-asset links, structured
+equipment and stream tables, timeline data, model-audit data, and the full JSON
+payload.
+
+The `Data package JSON` download exposes the same technical tables as machine
+readable JSON: equipment, streams, equations, utilities, energy, timing,
+timeline, model audit, and the reference-file manifest.
 
 Each process node has an `Export step` button. It downloads a focused HTML
 report for that unit operation, including equations, inputs, outputs,
 utilities, and the step-level JSON payload.
+
+Each equipment item and stream on the `Factory` page can also be right-clicked
+for scoped JSON/CSV/Markdown export. The inspector additionally offers focused
+HTML reports for the selected equipment or stream.
 
 ## Process flow
 

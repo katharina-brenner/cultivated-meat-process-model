@@ -3,22 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cultivated Meat Process Twin</title>
+    <title>insilico dynamics | Bioprocess Facility OS</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app-shell" id="app">
       <aside class="control-panel" data-export-scope="parameters">
-        <div class="panel-title">
-          <p class="eyebrow">Cell cultivation</p>
-          <h1>Process Twin</h1>
-        </div>
-
-        <div class="preset-row" data-export-scope="scenarios">
-          <button type="button" class="preset-button active" data-preset="main">90:10</button>
-          <button type="button" class="preset-button" data-preset="heat">50:50</button>
-          <button type="button" class="preset-button" data-preset="local">Local</button>
-          <button type="button" class="preset-button" data-preset="str">STR only</button>
+        <div class="panel-title brand-lockup">
+          <span class="brand-mark">id</span>
+          <div>
+            <p class="eyebrow">insilico dynamics</p>
+            <h1>Process OS</h1>
+          </div>
         </div>
 
         <div class="control-group">
@@ -102,8 +98,8 @@
       <section class="workspace">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Cultivated meat manufacturing twin</p>
-            <h2 id="scenarioTitle">Main process 90:10</h2>
+            <p class="eyebrow">insilico dynamics</p>
+            <h2 id="scenarioTitle">Bioprocess facility model</h2>
           </div>
           <div class="topbar-actions">
             <button id="playButton" class="secondary-button icon-button" type="button" aria-label="Play process animation">
@@ -112,26 +108,25 @@
             </button>
             <button id="downloadButton" class="primary-button icon-button" type="button" aria-label="Export complete process report">
               <span class="button-icon">↓</span>
-              <span>Export all</span>
+              <span>Export model</span>
             </button>
           </div>
         </header>
 
-        <nav class="view-tabs" aria-label="Dashboard views">
+        <nav class="view-tabs" aria-label="Process views">
           <button type="button" class="view-tab active" data-view="plant">Factory</button>
           <button type="button" class="view-tab" data-view="process">Timeline</button>
-          <button type="button" class="view-tab" data-view="model">Balances</button>
-          <button type="button" class="view-tab" data-view="equations">Chemistry</button>
-          <button type="button" class="view-tab" data-view="exports">Export</button>
+          <button type="button" class="view-tab" data-view="model">Data</button>
+          <button type="button" class="view-tab" data-view="exports">Downloads</button>
         </nav>
 
         <section class="panel factory-control view-panel active" data-view-panel="plant" data-export-scope="plant">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Factory map</p>
-              <h2>Select equipment or stream for details</h2>
+              <p class="eyebrow">Live facility map</p>
+              <h2>Digital process plant</h2>
             </div>
-            <span id="factoryStatus">Live baseline</span>
+            <span id="factoryStatus">Live process</span>
           </div>
           <div class="factory-layout">
             <div id="factoryMap" class="factory-map" aria-label="Clickable production plant"></div>
@@ -167,7 +162,7 @@
           <div class="hero-copy">
             <div>
               <p class="eyebrow">Timeline view</p>
-              <h3>End-to-end biomass manufacturing</h3>
+              <h3>Process flow over time</h3>
             </div>
             <div class="utility-rail" id="utilityRail"></div>
           </div>
@@ -176,10 +171,10 @@
 
           <div class="plant-preview">
             <div class="preview-heading">
-              <span>Spatial plant view</span>
+              <span>PFD plant view</span>
               <strong id="activeUnit">Media prep</strong>
             </div>
-            <canvas id="processCanvas" width="1400" height="620" aria-label="Simplified process view"></canvas>
+            <canvas id="processCanvas" width="1600" height="760" aria-label="Process flow diagram with engineering equipment symbols"></canvas>
           </div>
 
           <div class="time-strip">
@@ -198,16 +193,17 @@
         <section class="analysis-grid view-panel" data-view-panel="model">
           <article class="panel" data-export-scope="timeline">
             <div class="panel-heading">
-              <h2>Time Response</h2>
+              <h2>Time response</h2>
               <span id="currentStage">Media prep</span>
             </div>
             <canvas id="timelineCanvas" width="980" height="320" aria-label="Cell count and energy over time"></canvas>
+            <div id="timeBalanceStrip" class="time-balance-strip" aria-label="Process time balance"></div>
           </article>
 
           <article class="panel" data-export-scope="streams">
             <div class="panel-heading">
-              <h2>Inputs and Outputs</h2>
-              <span>kg per batch</span>
+              <h2>Key flows</h2>
+              <span>full table in downloads</span>
             </div>
             <div class="table-wrap">
               <table>
@@ -227,8 +223,8 @@
         <section class="panel model-audit view-panel" data-view-panel="model" data-export-scope="model-match">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Python model audit</p>
-              <h2>Live simulator vs paper/Python baseline</h2>
+              <p class="eyebrow">Model audit</p>
+              <h2>Live model vs baseline</h2>
             </div>
             <span id="modelAuditStatus">checking</span>
           </div>
@@ -268,23 +264,39 @@
         <section class="panel export-center view-panel" data-view-panel="exports" data-export-scope="exports">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Reports</p>
-              <h2>Download the model at any level</h2>
+              <p class="eyebrow">Downloads</p>
+              <h2>Complete technical data package</h2>
             </div>
             <span>HTML, JSON, CSV, Markdown</span>
           </div>
+          <div class="download-scenario" data-export-scope="scenarios">
+            <label for="downloadScenario">
+              <span>Export scenario</span>
+              <select id="downloadScenario">
+                <option value="main">90:10 sterile split</option>
+                <option value="heat">50:50 sterile split</option>
+                <option value="local">Local scale</option>
+                <option value="str">STR-only expansion</option>
+              </select>
+            </label>
+          </div>
+          <div id="downloadSummary" class="download-summary"></div>
           <div class="export-actions">
             <button id="exportHtmlButton" class="primary-button icon-button" type="button">
               <span class="button-icon">↓</span>
-              <span>Complete HTML</span>
+              <span>Technical HTML</span>
             </button>
             <button id="exportJsonButton" class="secondary-button icon-button" type="button">
               <span class="button-icon">{ }</span>
-              <span>Full JSON</span>
+              <span>Full model JSON</span>
+            </button>
+            <button id="exportDataPackageButton" class="secondary-button icon-button" type="button">
+              <span class="button-icon">Σ</span>
+              <span>Data package JSON</span>
             </button>
             <button id="exportCsvButton" class="secondary-button icon-button" type="button">
               <span class="button-icon">#</span>
-              <span>Full CSV</span>
+              <span>Flattened CSV</span>
             </button>
             <button id="exportMdButton" class="secondary-button icon-button" type="button">
               <span class="button-icon">M</span>
@@ -296,8 +308,8 @@
 
         <section class="panel reference-panel view-panel" data-view-panel="exports" data-export-scope="references">
           <div class="panel-heading">
-            <h2>Reference Process Material</h2>
-            <span>from uploaded ZIPs</span>
+            <h2>Reference downloads</h2>
+            <span>no image preview</span>
           </div>
           <div id="referenceAssets" class="reference-grid"></div>
         </section>
@@ -311,6 +323,7 @@
       <button type="button" data-action="copy-equations">Copy equations</button>
     </nav>
 
+    <div id="downloadShelf" class="download-shelf" hidden></div>
     <div id="exportToast" class="export-toast" role="status" aria-live="polite" hidden></div>
 
     <script src="app.js"></script>
