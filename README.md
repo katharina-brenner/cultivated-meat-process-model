@@ -66,6 +66,7 @@ from `webapp/`. The expected public URL is:
 - click-through views for `Factory`, `Timeline`, `Data`, and `Downloads`
 - first-page factory map with every major equipment item and animated process stream from media prep through packaged product
 - clickable equipment and streams with bioprocess-specific operation icons, hover-only explanations, and a live inspector for physical properties, reactions, mass balances, utilities, and connected objects
+- dark high-end `insilico dynamics` CI with a unified SF Pro/system font stack, graphite surfaces, and restrained cyan, steel-blue, green, amber, and red process accents
 - plant-intelligence cards for batch cadence, bottleneck, energy intensity, utility envelope, and process yield
 - Celonis-like process diagram and factory map with equipment icons for media prep, seed expansion, production STR, clarification, washing, extrusion, packaging, and waste
 - paper reference table showing live app values, paper values, and numerical deltas
