@@ -60,6 +60,11 @@ After pushes to `main`, the GitHub Pages workflow deploys the static web app
 from `webapp/`. The expected public URL is:
 `https://katharina-brenner.github.io/cultivated-meat-process-model/`.
 
+The workflow publishes the contents of `webapp/` as the site root. For
+convenience, the legacy public path
+`https://katharina-brenner.github.io/cultivated-meat-process-model/webapp/index.html`
+redirects back to the correct public URL above.
+
 For first-time publication on GitHub, open the repository on GitHub and set
 `Settings` -> `Pages` -> `Build and deployment` -> `Source` to
 `GitHub Actions`. After the next successful `Deploy webapp to GitHub Pages`
