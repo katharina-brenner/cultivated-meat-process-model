@@ -13,7 +13,7 @@ const ciPalette = {
   production: "#3a6ea5",
   energy: "#a36d20",
   utility: "#7b79b8",
-  waste: "#b94b48",
+  waste: "#9b6a63",
   product: "#1d8f83",
   text: "#111827",
   muted: "#667085",
@@ -979,10 +979,11 @@ function plantInsights(sim) {
   return [
     {
       key: "cadence",
-      label: "Batch cadence",
+      label: "Daily output",
       value: `${fmt(cadenceKgDay, 0)} kg/day`,
-      detail: `${fmt(sim.totalTimeH, 1)} h cycle`,
+      detail: `${fmt(sim.totalTimeH, 1)} h batch cycle`,
       status: "steady",
+      trend: [0.16, 0.34, 0.58, 0.82, 0.9],
     },
     {
       key: "bottleneck",
@@ -990,6 +991,7 @@ function plantInsights(sim) {
       value: bottleneck[0],
       detail: `${fmt(bottleneck[1], 1)} h critical path`,
       status: bottleneck[0] === "Production" ? "critical" : "steady",
+      trend: timingSegments.map((item) => item[1]),
     },
     {
       key: "intensity",
@@ -997,6 +999,7 @@ function plantInsights(sim) {
       value: `${fmt(energyIntensity, 2)} kWh/kg`,
       detail: `${fmt(mediumIntensity, 1)} kg medium/kg product`,
       status: energyIntensity > 2 ? "watch" : "steady",
+      trend: [sim.energy.mediaPrepKwh, sim.energy.mediaPrepKwh + sim.energy.agitationKwh * 0.45, sim.energy.totalEnergyKwh],
     },
     {
       key: "utilities",
@@ -1004,6 +1007,7 @@ function plantInsights(sim) {
       value: `${fmt(utilityWaterKg / 1000, 1)} t water`,
       detail: `${fmt(sim.utility.steamKg || 0, 0)} kg steam / batch`,
       status: "watch",
+      trend: [sim.utility.steamKg || 0, sim.utility.processWaterKg || 0, sim.utility.estimatedCoolingWaterKg || 0, utilityWaterKg],
     },
     {
       key: "yield",
@@ -1011,8 +1015,21 @@ function plantInsights(sim) {
       value: `${fmt(biomassYield * 100, 1)}%`,
       detail: `${fmt(sim.downstream.packagedKg, 0)} kg packaged / batch`,
       status: biomassYield > 0.08 ? "steady" : "watch",
+      trend: [0.18, 0.32, 0.53, 0.76, biomassYield],
     },
   ];
+}
+
+function sparklinePath(values) {
+  const clean = values.map((value) => Number(value) || 0);
+  const min = Math.min(...clean);
+  const max = Math.max(...clean);
+  const span = Math.max(max - min, 0.001);
+  return clean.map((value, index) => {
+    const x = clean.length === 1 ? 50 : (index / (clean.length - 1)) * 100;
+    const y = 20 - ((value - min) / span) * 16;
+    return `${index === 0 ? "M" : "L"} ${fmt(x, 1)} ${fmt(y, 1)}`;
+  }).join(" ");
 }
 
 function renderPlantInsights(sim) {
@@ -1023,6 +1040,9 @@ function renderPlantInsights(sim) {
       <span>${escapeHtml(item.label)}</span>
       <strong>${escapeHtml(item.value)}</strong>
       <small>${escapeHtml(item.detail)}</small>
+      <svg class="insight-sparkline" viewBox="0 0 100 24" aria-hidden="true" focusable="false">
+        <path d="${escapeHtml(sparklinePath(item.trend || [0, 1]))}"/>
+      </svg>
     </article>
   `).join("");
 }
@@ -1509,6 +1529,54 @@ function shortStreamLabel(label) {
   return `${label.slice(0, 21)}...`;
 }
 
+function inspectorMetricLabel(key) {
+  const labels = {
+    working_volume_L: "Working volume",
+    density_cells_ml: "Cell density",
+    power_kw: "Power",
+    culture_duration_h: "Culture time",
+    biomass_kg: "Biomass",
+    depleted_medium_kg: "Depleted medium",
+    agitation_kwh: "Agitation energy",
+    cooling_kwh: "Cooling duty",
+    heat_kwh: "Heat duty",
+    electricity_kwh: "Electricity",
+    storage_C: "Storage temp.",
+    temperature_C: "Temperature",
+    filter_area_m2: "Filter area",
+    cartridges: "Cartridges",
+    components: "Components",
+    impurities_removed_kg: "Impurities removed",
+    from: "From",
+    to: "To",
+    type: "Stream type",
+    cells: "Cells",
+    oxygen_kg: "Oxygen",
+    synthetic_air_kg: "Synthetic air",
+    co2_kg: "CO2",
+    medium_kg: "Medium",
+    product_biomass_kg: "Product biomass",
+    depleted_medium_waste_kg: "Spent medium",
+    wash_waste_kg: "Wash side stream",
+    packaged_product_kg: "Packaged product",
+    container_kg: "Container mass",
+    stream_id: "Stream ID",
+    buffer_volume_L: "Buffer volume",
+    inlet_C: "Inlet temp.",
+    outlet_C: "Outlet temp.",
+  };
+  if (labels[key]) return labels[key];
+  return String(key)
+    .replace(/_kg_h\b/g, " kg/h")
+    .replace(/_kwh\b/g, " kWh")
+    .replace(/_kw\b/g, " kW")
+    .replace(/_kg\b/g, " kg")
+    .replace(/_L\b/g, " L")
+    .replace(/_C\b/g, " C")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function detailForSelection(sim) {
   if (selectedDetail.type === "stream") {
     const item = streamCatalog(sim).find((streamItem) => streamItem.key === selectedDetail.key);
@@ -1544,9 +1612,9 @@ function renderUnitInspector(sim) {
     </div>
     <p>${detail.type === "stream" ? "Stream" : escapeHtml(item.type)} · ${escapeHtml(item.value)}</p>
     <div class="inspector-summary">
-      ${propertyEntries.map(([key, value]) => `<div class="inspector-mini"><span>${escapeHtml(key)}</span><strong>${formatValue(value)}</strong></div>`).join("")}
-      ${massEntries.map(([key, value]) => `<div class="inspector-mini"><span>${escapeHtml(key)}</span><strong>${formatValue(value)}</strong></div>`).join("")}
-      ${utilityEntries.map(([key, value]) => `<div class="inspector-mini"><span>${escapeHtml(key)}</span><strong>${formatValue(value)}</strong></div>`).join("")}
+      ${propertyEntries.map(([key, value]) => `<div class="inspector-mini"><span>${escapeHtml(inspectorMetricLabel(key))}</span><strong>${formatValue(value)}</strong></div>`).join("")}
+      ${massEntries.map(([key, value]) => `<div class="inspector-mini"><span>${escapeHtml(inspectorMetricLabel(key))}</span><strong>${formatValue(value)}</strong></div>`).join("")}
+      ${utilityEntries.map(([key, value]) => `<div class="inspector-mini"><span>${escapeHtml(inspectorMetricLabel(key))}</span><strong>${formatValue(value)}</strong></div>`).join("")}
     </div>
     <div class="equation-preview">
       <span>Equation preview</span>

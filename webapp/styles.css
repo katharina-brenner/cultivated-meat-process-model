@@ -11,7 +11,7 @@
   --cyan: #2ca9b7;
   --green: #2f7d63;
   --amber: #a36d20;
-  --red: #b94b48;
+  --red: #9b6a63;
   --ink: #1f2937;
   --ink-soft: #334155;
   --champagne: #d8c7a1;
@@ -301,7 +301,7 @@ select {
 
 .plant-insight-card {
   min-width: 0;
-  min-height: 84px;
+  min-height: 96px;
   padding: 12px;
   border: 1px solid rgba(13, 23, 33, 0.12);
   border-radius: 8px;
@@ -353,6 +353,29 @@ select {
   font-weight: 560;
   line-height: 1.3;
   text-transform: none;
+}
+
+.insight-sparkline {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin-top: 9px;
+}
+
+.insight-sparkline path {
+  fill: none;
+  stroke: var(--blue);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
+.plant-insight-card.watch .insight-sparkline path {
+  stroke: var(--amber);
+}
+
+.plant-insight-card.critical .insight-sparkline path {
+  stroke: var(--red);
 }
 
 .factory-map {
@@ -420,7 +443,7 @@ select {
 }
 
 .factory-pipe.waste-line {
-  stroke: rgba(209, 75, 69, 0.28);
+  stroke: rgba(155, 106, 99, 0.24);
   stroke-width: 8;
   stroke-dasharray: 10 10;
 }
@@ -678,8 +701,8 @@ select {
   background: rgba(255, 255, 255, 0.9);
   overflow: auto;
   display: grid;
-  grid-template-columns: minmax(220px, 0.9fr) minmax(320px, 1.6fr) auto;
-  gap: 12px 14px;
+  grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
+  gap: 14px 18px;
   align-items: start;
 }
 
@@ -688,6 +711,11 @@ select {
   align-items: center;
   gap: 12px;
   grid-column: 1;
+  min-width: 0;
+}
+
+.inspector-top > div {
+  min-width: 0;
 }
 
 .inspector-icon {
@@ -727,6 +755,8 @@ select {
 .inspector-top h3 {
   margin: 2px 0 0;
   font-size: 21px;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
 }
 
 .inspector-value {
@@ -820,8 +850,9 @@ select {
 .inspector-summary {
   grid-column: 2;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 8px;
+  min-width: 0;
 }
 
 .inspector-mini {
@@ -839,32 +870,42 @@ select {
   color: var(--muted);
   font-size: 10px;
   font-weight: 700;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
 .inspector-mini strong {
   display: block;
   margin-top: 5px;
-  overflow: hidden;
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .equation-preview {
-  grid-column: 3;
+  grid-column: 2;
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
-  min-width: 240px;
+  min-width: 0;
+}
+
+.equation-preview span {
+  grid-column: 1 / -1;
 }
 
 .equation-preview code {
+  min-width: 0;
   margin: 0;
   padding: 9px;
   border-radius: 8px;
   font-size: 11px;
+  line-height: 1.32;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .reference-delta-strip {
@@ -1942,6 +1983,10 @@ td:first-child {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .equation-preview {
+    grid-template-columns: 1fr;
+  }
+
   .diagram-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2021,6 +2066,10 @@ td:first-child {
 
   .time-balance-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inspector-summary {
+    grid-template-columns: 1fr;
   }
 
   .download-scenario label {
