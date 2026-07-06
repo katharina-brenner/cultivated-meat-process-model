@@ -60,6 +60,11 @@ After pushes to `main`, the GitHub Pages workflow deploys the static web app
 from `webapp/`. The expected public URL is:
 `https://katharina-brenner.github.io/cultivated-meat-process-model/`.
 
+For first-time publication on GitHub, open the repository on GitHub and set
+`Settings` -> `Pages` -> `Build and deployment` -> `Source` to
+`GitHub Actions`. After the next successful `Deploy webapp to GitHub Pages`
+action, the app can be opened and used directly from the public URL above.
+
 # What the app shows
 
 - live cultivation controls for final STR volume, peak viable cell density, doubling time, culture duration, cell mass, viability, media composition, sterilization split, biomass recovery, wash fraction, and buffer volume

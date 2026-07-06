@@ -983,7 +983,6 @@ function plantInsights(sim) {
       value: `${fmt(cadenceKgDay, 0)} kg/day`,
       detail: `${fmt(sim.totalTimeH, 1)} h batch cycle`,
       status: "steady",
-      trend: [0.16, 0.34, 0.58, 0.82, 0.9],
     },
     {
       key: "bottleneck",
@@ -991,7 +990,6 @@ function plantInsights(sim) {
       value: bottleneck[0],
       detail: `${fmt(bottleneck[1], 1)} h critical path`,
       status: bottleneck[0] === "Production" ? "critical" : "steady",
-      trend: timingSegments.map((item) => item[1]),
     },
     {
       key: "intensity",
@@ -999,7 +997,6 @@ function plantInsights(sim) {
       value: `${fmt(energyIntensity, 2)} kWh/kg`,
       detail: `${fmt(mediumIntensity, 1)} kg medium/kg product`,
       status: energyIntensity > 2 ? "watch" : "steady",
-      trend: [sim.energy.mediaPrepKwh, sim.energy.mediaPrepKwh + sim.energy.agitationKwh * 0.45, sim.energy.totalEnergyKwh],
     },
     {
       key: "utilities",
@@ -1007,7 +1004,6 @@ function plantInsights(sim) {
       value: `${fmt(utilityWaterKg / 1000, 1)} t water`,
       detail: `${fmt(sim.utility.steamKg || 0, 0)} kg steam / batch`,
       status: "watch",
-      trend: [sim.utility.steamKg || 0, sim.utility.processWaterKg || 0, sim.utility.estimatedCoolingWaterKg || 0, utilityWaterKg],
     },
     {
       key: "yield",
@@ -1015,21 +1011,8 @@ function plantInsights(sim) {
       value: `${fmt(biomassYield * 100, 1)}%`,
       detail: `${fmt(sim.downstream.packagedKg, 0)} kg packaged / batch`,
       status: biomassYield > 0.08 ? "steady" : "watch",
-      trend: [0.18, 0.32, 0.53, 0.76, biomassYield],
     },
   ];
-}
-
-function sparklinePath(values) {
-  const clean = values.map((value) => Number(value) || 0);
-  const min = Math.min(...clean);
-  const max = Math.max(...clean);
-  const span = Math.max(max - min, 0.001);
-  return clean.map((value, index) => {
-    const x = clean.length === 1 ? 50 : (index / (clean.length - 1)) * 100;
-    const y = 20 - ((value - min) / span) * 16;
-    return `${index === 0 ? "M" : "L"} ${fmt(x, 1)} ${fmt(y, 1)}`;
-  }).join(" ");
 }
 
 function renderPlantInsights(sim) {
@@ -1040,9 +1023,6 @@ function renderPlantInsights(sim) {
       <span>${escapeHtml(item.label)}</span>
       <strong>${escapeHtml(item.value)}</strong>
       <small>${escapeHtml(item.detail)}</small>
-      <svg class="insight-sparkline" viewBox="0 0 100 24" aria-hidden="true" focusable="false">
-        <path d="${escapeHtml(sparklinePath(item.trend || [0, 1]))}"/>
-      </svg>
     </article>
   `).join("");
 }
