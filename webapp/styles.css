@@ -1,21 +1,27 @@
 :root {
-  color-scheme: light;
-  --bg: #f3f6f8;
-  --surface: rgba(255, 255, 255, 0.82);
-  --surface-strong: #ffffff;
-  --line: rgba(13, 23, 33, 0.12);
-  --line-strong: rgba(13, 23, 33, 0.2);
-  --text: #101418;
-  --muted: #66707a;
-  --blue: #0071e3;
-  --cyan: #16b8c7;
-  --green: #15845f;
-  --amber: #a96c12;
-  --red: #c3423f;
-  --shadow: 0 18px 46px rgba(17, 24, 31, 0.08);
-  --shadow-strong: 0 28px 80px rgba(17, 24, 31, 0.12);
+  color-scheme: dark;
+  --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --bg: #05070c;
+  --ink: #070b10;
+  --surface: rgba(10, 15, 23, 0.78);
+  --surface-soft: rgba(14, 21, 31, 0.68);
+  --surface-strong: #101821;
+  --surface-elevated: rgba(18, 27, 39, 0.92);
+  --line: rgba(203, 218, 229, 0.13);
+  --line-strong: rgba(203, 218, 229, 0.24);
+  --text: #f3f7fb;
+  --muted: #9aa8b8;
+  --blue: #7ab7ff;
+  --cyan: #34d6c9;
+  --green: #68d89c;
+  --amber: #d8ad63;
+  --red: #ff7474;
+  --violet: #a9a7ff;
+  --shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+  --shadow-strong: 0 34px 100px rgba(0, 0, 0, 0.48);
+  --inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --radius: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  font-family: var(--font-main);
 }
 
 * {
@@ -27,10 +33,15 @@ body {
   margin: 0;
   min-width: 320px;
   background:
-    linear-gradient(180deg, rgba(251,253,255,0.98) 0, rgba(236,242,247,0.96) 340px, var(--bg) 100%),
-    repeating-linear-gradient(90deg, rgba(10,20,30,0.03) 0 1px, transparent 1px 76px),
-    repeating-linear-gradient(0deg, rgba(10,20,30,0.02) 0 1px, transparent 1px 58px);
+    radial-gradient(circle at 78% 8%, rgba(52, 214, 201, 0.16), transparent 26%),
+    radial-gradient(circle at 8% 18%, rgba(122, 183, 255, 0.13), transparent 28%),
+    linear-gradient(180deg, #090d13 0, #05070c 420px, #040609 100%),
+    repeating-linear-gradient(90deg, rgba(203,218,229,0.025) 0 1px, transparent 1px 76px),
+    repeating-linear-gradient(0deg, rgba(203,218,229,0.018) 0 1px, transparent 1px 58px);
   color: var(--text);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
 body::before {
@@ -40,9 +51,10 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 76% 12%, rgba(255,255,255,0.74), transparent 24%),
+    radial-gradient(circle at 76% 12%, rgba(122,183,255,0.22), transparent 24%),
     url("assets/bioprocess-plant-background.svg") no-repeat right 88px top 120px / min(1120px, 86vw) auto;
-  opacity: 0.19;
+  opacity: 0.24;
+  mix-blend-mode: screen;
 }
 
 button,
@@ -1868,6 +1880,300 @@ td:first-child {
 .download-shelf .shelf-close {
   width: 32px;
   padding: 0;
+}
+
+::selection {
+  background: rgba(52, 214, 201, 0.32);
+  color: var(--text);
+}
+
+select,
+input,
+button {
+  color-scheme: dark;
+}
+
+select {
+  background:
+    linear-gradient(135deg, transparent 50%, var(--muted) 50%) right 14px center / 7px 7px no-repeat,
+    linear-gradient(180deg, rgba(18,27,39,0.96), rgba(9,14,21,0.96));
+  box-shadow: var(--inner-highlight);
+}
+
+.control-panel,
+.panel,
+.metric,
+.hero-surface,
+.topbar,
+.factory-control,
+.reference-values,
+.export-center,
+.reference-panel {
+  border-color: var(--line);
+  background:
+    linear-gradient(180deg, rgba(18,27,39,0.86), rgba(8,12,18,0.78)),
+    linear-gradient(120deg, rgba(122,183,255,0.07), transparent 34%, rgba(52,214,201,0.055));
+  box-shadow: var(--shadow), var(--inner-highlight);
+}
+
+.control-panel,
+.topbar {
+  background:
+    linear-gradient(180deg, rgba(20,30,43,0.93), rgba(8,12,18,0.86)),
+    repeating-linear-gradient(90deg, rgba(203,218,229,0.032) 0 1px, transparent 1px 54px);
+}
+
+.brand-mark,
+.view-tab.active,
+.primary-button,
+.timeline-metric-controls label:has(input:checked),
+.preset-button.active,
+.reference-tile span {
+  background:
+    linear-gradient(180deg, rgba(245,249,255,0.16), transparent 48%),
+    linear-gradient(180deg, #172331, #05080d);
+  color: #f7fbff;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), 0 18px 38px rgba(0,0,0,0.34);
+}
+
+.primary-button {
+  border-color: rgba(122, 183, 255, 0.22);
+}
+
+.secondary-button,
+.node-export,
+.download-shelf a,
+.download-shelf button {
+  border-color: var(--line);
+  background: rgba(19, 29, 41, 0.72);
+  color: var(--text);
+  box-shadow: var(--inner-highlight);
+}
+
+.secondary-button:hover,
+.node-export:hover,
+.context-menu button:hover,
+.download-shelf a:hover,
+.download-shelf button:hover {
+  border-color: rgba(52, 214, 201, 0.36);
+  background: rgba(52, 214, 201, 0.11);
+}
+
+.view-tabs,
+.preset-row,
+.download-scenario,
+.factory-map,
+.plant-preview,
+.process-stage,
+.time-strip,
+.context-menu,
+.hover-tooltip,
+.export-toast,
+.download-shelf,
+.unit-inspector {
+  border-color: var(--line);
+  background:
+    linear-gradient(180deg, rgba(15,23,34,0.9), rgba(7,11,17,0.86)),
+    repeating-linear-gradient(90deg, rgba(203,218,229,0.026) 0 1px, transparent 1px 52px);
+  box-shadow: var(--shadow), var(--inner-highlight);
+}
+
+.factory-map,
+.plant-preview {
+  background:
+    radial-gradient(circle at 72% 18%, rgba(52,214,201,0.10), transparent 24%),
+    linear-gradient(145deg, rgba(15,23,34,0.92), rgba(5,8,13,0.9)),
+    repeating-linear-gradient(0deg, rgba(203,218,229,0.035) 0 1px, transparent 1px 38px),
+    repeating-linear-gradient(90deg, rgba(203,218,229,0.025) 0 1px, transparent 1px 52px);
+}
+
+.plant-insight-card,
+.reference-pill,
+.inspector-mini,
+.utility-pill,
+.process-node,
+.stream-chip,
+.time-balance-strip div,
+.equation,
+.stage-card,
+.download-summary article,
+.step-export-card,
+.reference-tile,
+.timeline-metric-controls label {
+  border-color: var(--line);
+  background:
+    linear-gradient(180deg, rgba(23,34,49,0.86), rgba(10,15,23,0.82));
+  color: var(--text);
+  box-shadow: var(--inner-highlight);
+}
+
+.plant-insight-card {
+  box-shadow: 0 16px 42px rgba(0,0,0,0.24), var(--inner-highlight);
+}
+
+.plant-insight-card::before {
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+}
+
+.plant-insight-card.watch::before {
+  background: linear-gradient(90deg, var(--amber), rgba(216,173,99,0.38));
+}
+
+.plant-insight-card.critical::before {
+  background: linear-gradient(90deg, var(--red), rgba(255,116,116,0.38));
+}
+
+.metric {
+  background:
+    linear-gradient(180deg, rgba(25,37,53,0.88), rgba(9,14,21,0.84)),
+    radial-gradient(circle at 88% 18%, rgba(122,183,255,0.12), transparent 26%);
+}
+
+.factory-floor {
+  fill: rgba(7, 11, 17, 0.68);
+  stroke: rgba(203, 218, 229, 0.12);
+}
+
+.factory-zone {
+  fill: rgba(16, 24, 35, 0.44);
+  stroke: rgba(203, 218, 229, 0.1);
+}
+
+.factory-zone-label,
+.unit-badge,
+.unit-badge.compact {
+  fill: rgba(205, 218, 229, 0.66);
+}
+
+.unit-card,
+.factory-unit.detail .unit-card {
+  fill: rgba(16, 24, 35, 0.96);
+  stroke: rgba(203, 218, 229, 0.18);
+}
+
+.unit-platform {
+  fill: rgba(203, 218, 229, 0.09);
+}
+
+.factory-unit.active .unit-card,
+.factory-unit:hover .unit-card,
+.factory-unit.selected .unit-card {
+  stroke: var(--unit-color);
+  stroke-width: 2;
+}
+
+.factory-icon {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--unit-color) 72%, white 8%), color-mix(in srgb, var(--unit-color) 72%, black));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 14px 28px rgba(0,0,0,0.34);
+}
+
+.unit-title,
+.unit-title.compact,
+.factory-legend text,
+.factory-callout text {
+  fill: var(--text);
+}
+
+.factory-legend rect,
+.factory-callout rect,
+.stream-popover {
+  fill: rgba(13, 20, 30, 0.94) !important;
+  stroke: rgba(203, 218, 229, 0.18) !important;
+}
+
+.stream-popover-title,
+.stream-popover-value {
+  fill: var(--text) !important;
+}
+
+.stream-popover-value {
+  fill: var(--muted) !important;
+}
+
+.stream-label rect {
+  fill: rgba(5, 8, 13, 0.94);
+  stroke: rgba(52, 214, 201, 0.42);
+}
+
+.stream-label.selected rect,
+.stream-label:hover rect {
+  fill: rgba(235, 244, 255, 0.96);
+  stroke: var(--cyan);
+}
+
+.stream-label.selected text,
+.stream-label:hover text {
+  fill: #061016;
+}
+
+.unit-inspector code,
+.node-equation,
+.equation code,
+code,
+pre {
+  border-color: var(--line);
+  background: rgba(3, 6, 10, 0.62);
+  color: #dbeafe;
+}
+
+th {
+  color: #dbe6f1;
+}
+
+td {
+  color: #d7e0ea;
+}
+
+th:first-child,
+td:first-child {
+  color: var(--muted);
+}
+
+.time-balance-strip .total {
+  border-color: rgba(122, 183, 255, 0.36);
+  background:
+    linear-gradient(180deg, rgba(31,48,70,0.92), rgba(10,16,25,0.86));
+}
+
+.download-summary article,
+.step-export-card,
+.reference-tile {
+  text-decoration: none;
+}
+
+.hover-tooltip small {
+  background: rgba(3, 6, 10, 0.46);
+}
+
+.factory-map::-webkit-scrollbar-thumb,
+.control-panel::-webkit-scrollbar-thumb {
+  background: rgba(203, 218, 229, 0.24);
+}
+
+.stream-path.media {
+  stroke: var(--blue);
+}
+
+.stream-path.cells,
+.stream-path.product {
+  stroke: var(--cyan);
+}
+
+.stream-path.energy {
+  stroke: var(--amber);
+}
+
+.stream-path.utility {
+  stroke: var(--violet);
+}
+
+.stream-path.waste {
+  stroke: var(--red);
+}
+
+.active-pulse {
+  fill: var(--cyan);
 }
 
 @media (max-width: 1100px) {

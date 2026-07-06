@@ -1,6 +1,22 @@
 const cpWater = 4.184;
 const mediumDensityKgL = 19907.5903 / 20000;
 const playSpeedHoursPerSecond = 18;
+const canvasFont = '"SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif';
+const uiPalette = {
+  bg: "#060a10",
+  panel: "rgba(11, 17, 26, 0.92)",
+  panelStrong: "rgba(18, 27, 39, 0.96)",
+  text: "#f3f7fb",
+  muted: "rgba(154, 168, 184, 0.86)",
+  line: "rgba(203, 218, 229, 0.14)",
+  lineStrong: "rgba(203, 218, 229, 0.24)",
+  blue: "#7ab7ff",
+  cyan: "#34d6c9",
+  green: "#68d89c",
+  amber: "#d8ad63",
+  red: "#ff7474",
+  violet: "#a9a7ff",
+};
 const downstreamDurationsH = {
   clarification: 1.3,
   washing: 1.4,
@@ -552,12 +568,12 @@ function timingBreakdown(p, stages, totalTimeH) {
   const sumH = modeledH + closeoutH;
   const downstreamStartH = stages[stages.length - 1]?.endTimeH || mediaPrepH;
   const segments = [
-    { key: "media", label: "Media prep", startH: 0, endH: mediaPrepH, color: "#0071e3" },
+    { key: "media", label: "Media prep", startH: 0, endH: mediaPrepH, color: uiPalette.blue },
   ];
   if (seedTrainH > 0) {
-    segments.push({ key: "seed", label: "Seed train", startH: mediaPrepH, endH: mediaPrepH + seedTrainH, color: "#15845f" });
+    segments.push({ key: "seed", label: "Seed train", startH: mediaPrepH, endH: mediaPrepH + seedTrainH, color: uiPalette.green });
   }
-  segments.push({ key: "production", label: "Production STR", startH: mediaPrepH + seedTrainH, endH: downstreamStartH, color: "#0071e3" });
+  segments.push({ key: "production", label: "Production STR", startH: mediaPrepH + seedTrainH, endH: downstreamStartH, color: uiPalette.cyan });
   let cursor = downstreamStartH;
   Object.entries(downstreamDurationsH).forEach(([key, durationH]) => {
     segments.push({
@@ -565,12 +581,12 @@ function timingBreakdown(p, stages, totalTimeH) {
       label: key === "clarification" ? "Clarification" : key[0].toUpperCase() + key.slice(1),
       startH: cursor,
       endH: cursor + durationH,
-      color: key === "packaging" ? "#0071e3" : "#a96c12",
+      color: key === "packaging" ? uiPalette.cyan : uiPalette.amber,
     });
     cursor += durationH;
   });
   if (closeoutH > 0.01) {
-    segments.push({ key: "closeout", label: "Batch closeout", startH: cursor, endH: totalTimeH, color: "#16b8c7" });
+    segments.push({ key: "closeout", label: "Batch closeout", startH: cursor, endH: totalTimeH, color: uiPalette.violet });
   }
   return {
     mediaPrepH,
@@ -1804,7 +1820,7 @@ function drawProcess(sim, currentTime) {
   const rect = resizeCanvas(processCanvas, processCtx);
   const ctx = processCtx;
   ctx.clearRect(0, 0, rect.width, rect.height);
-  ctx.fillStyle = "#fbfcfd";
+  ctx.fillStyle = uiPalette.bg;
   ctx.fillRect(0, 0, rect.width, rect.height);
 
   drawPfdGrid(ctx, rect);
@@ -1842,12 +1858,12 @@ function drawProcess(sim, currentTime) {
   document.getElementById("currentStage").textContent = activeLabel;
   document.getElementById("activeUnit").textContent = activeLabel;
 
-  ctx.fillStyle = "#17171c";
-  ctx.font = "700 22px -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillStyle = uiPalette.text;
+  ctx.font = `700 22px ${canvasFont}`;
   ctx.textAlign = "left";
   ctx.fillText("Process flow diagram", padX, 34);
-  ctx.fillStyle = "#6c6d75";
-  ctx.font = "12px -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillStyle = uiPalette.muted;
+  ctx.font = `12px ${canvasFont}`;
   ctx.fillText(`${fmt(currentTime, 1)} h / ${fmt(sim.totalTimeH, 1)} h · ${fmt(sim.params.finalVolumeL)} L final STR · ${scientific(sim.achievedDensity)} cells/mL`, padX, 56);
 }
 
@@ -1901,7 +1917,7 @@ function activePfdNodeKey(sim, currentTime) {
 
 function drawPfdGrid(ctx, rect) {
   ctx.save();
-  ctx.strokeStyle = "rgba(23, 23, 28, 0.045)";
+  ctx.strokeStyle = "rgba(203, 218, 229, 0.055)";
   ctx.lineWidth = 1;
   for (let x = 0; x < rect.width; x += 42) {
     ctx.beginPath();
@@ -1920,20 +1936,20 @@ function drawPfdGrid(ctx, rect) {
 
 function drawPfdZones(ctx, rect, topPad, innerH, activePhase) {
   const zones = [
-    { label: "Media preparation", phase: "media", y: topPad + innerH * 0.06, h: innerH * 0.39, color: "#0a84ff" },
-    { label: "Cell expansion and production", phase: "seed", y: topPad + innerH * 0.47, h: innerH * 0.22, color: "#2ca66f" },
-    { label: "Downstream processing", phase: "clarification", y: topPad + innerH * 0.73, h: innerH * 0.26, color: "#b7791f" },
+    { label: "Media preparation", phase: "media", y: topPad + innerH * 0.06, h: innerH * 0.39, color: uiPalette.blue },
+    { label: "Cell expansion and production", phase: "seed", y: topPad + innerH * 0.47, h: innerH * 0.22, color: uiPalette.green },
+    { label: "Downstream processing", phase: "clarification", y: topPad + innerH * 0.73, h: innerH * 0.26, color: uiPalette.amber },
   ];
   ctx.save();
   zones.forEach((zone) => {
     const phaseActive = activePhase === zone.phase || (zone.phase === "clarification" && ["washing", "extrusion", "packaging"].includes(activePhase)) || (zone.phase === "seed" && activePhase === "production");
     roundRect(ctx, 18, zone.y - 28, rect.width - 36, zone.h, 12);
-    ctx.fillStyle = phaseActive ? hexToRgba(zone.color, 0.08) : "rgba(255,255,255,0.48)";
+    ctx.fillStyle = phaseActive ? hexToRgba(zone.color, 0.1) : "rgba(14, 21, 31, 0.58)";
     ctx.fill();
-    ctx.strokeStyle = phaseActive ? hexToRgba(zone.color, 0.35) : "rgba(23,23,28,0.08)";
+    ctx.strokeStyle = phaseActive ? hexToRgba(zone.color, 0.42) : "rgba(203,218,229,0.1)";
     ctx.stroke();
-    ctx.fillStyle = "rgba(23,23,28,0.48)";
-    ctx.font = "700 10px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.fillStyle = "rgba(203,218,229,0.7)";
+    ctx.font = `700 10px ${canvasFont}`;
     ctx.fillText(zone.label.toUpperCase(), 32, zone.y - 10);
   });
   ctx.restore();
@@ -2035,14 +2051,14 @@ function drawArrowHead(ctx, a, b, color, scale) {
 function drawStreamLabel(ctx, label, x, y, scale) {
   ctx.save();
   ctx.textAlign = "center";
-  ctx.font = `650 ${Math.max(7, 8 * scale)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+  ctx.font = `650 ${Math.max(7, 8 * scale)}px ${canvasFont}`;
   const width = Math.min(104 * scale, Math.max(42 * scale, ctx.measureText(label).width + 12 * scale));
   roundRect(ctx, x - width / 2, y - 10 * scale, width, 17 * scale, 5 * scale);
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.fillStyle = "rgba(7, 11, 17, 0.9)";
   ctx.fill();
-  ctx.strokeStyle = "rgba(23,23,28,0.08)";
+  ctx.strokeStyle = "rgba(203,218,229,0.16)";
   ctx.stroke();
-  ctx.fillStyle = "#30343b";
+  ctx.fillStyle = uiPalette.text;
   ctx.fillText(label, x, y + 2 * scale);
   ctx.restore();
 }
@@ -2052,23 +2068,23 @@ function drawPfdNode(ctx, node, state) {
   const x = node.x - node.w / 2;
   const y = node.y - node.h / 2;
   ctx.save();
-  ctx.shadowColor = active ? `${pfdColor(node.phase)}55` : "rgba(20,20,30,0.08)";
+  ctx.shadowColor = active ? `${pfdColor(node.phase)}66` : "rgba(0,0,0,0.34)";
   ctx.shadowBlur = active ? 22 : 12;
   ctx.shadowOffsetY = 8;
   roundRect(ctx, x, y, node.w, node.h, 8 * scale);
-  ctx.fillStyle = active ? "#ffffff" : "rgba(255,255,255,0.92)";
+  ctx.fillStyle = active ? "rgba(26, 39, 55, 0.98)" : uiPalette.panelStrong;
   ctx.fill();
   ctx.shadowBlur = 0;
-  ctx.strokeStyle = active ? pfdColor(node.phase) : phaseActive ? `${pfdColor(node.phase)}88` : "rgba(23,23,28,0.16)";
+  ctx.strokeStyle = active ? pfdColor(node.phase) : phaseActive ? `${pfdColor(node.phase)}88` : uiPalette.lineStrong;
   ctx.lineWidth = active ? 2.4 : 1.2;
   ctx.stroke();
   drawPfdSymbol(ctx, node.type, node.x, node.y - node.h * 0.08, pfdColor(node.phase), scale);
   ctx.textAlign = "center";
-  ctx.fillStyle = "#17171c";
-  ctx.font = `800 ${Math.max(8, 10 * scale)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+  ctx.fillStyle = uiPalette.text;
+  ctx.font = `800 ${Math.max(8, 10 * scale)}px ${canvasFont}`;
   ctx.fillText(node.id, node.x, y + node.h - 16 * scale);
-  ctx.fillStyle = "#6c6d75";
-  ctx.font = `600 ${Math.max(7, 8 * scale)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+  ctx.fillStyle = uiPalette.muted;
+  ctx.font = `600 ${Math.max(7, 8 * scale)}px ${canvasFont}`;
   ctx.fillText(node.value, node.x, y + node.h - 5 * scale);
   if (active) {
     ctx.fillStyle = pfdColor(node.phase);
@@ -2253,19 +2269,19 @@ function pfdPort(node, side) {
 
 function pfdColor(kind) {
   return {
-    media: "#0a84ff",
-    seed: "#2ca66f",
-    production: "#0a84ff",
-    clarification: "#b7791f",
-    washing: "#b7791f",
-    extrusion: "#b7791f",
-    packaging: "#0f9f8f",
-    cells: "#2ca66f",
-    energy: "#b7791f",
-    utility: "#5c6ac4",
-    waste: "#d14b45",
-    product: "#0f9f8f",
-  }[kind] || "#0a84ff";
+    media: uiPalette.blue,
+    seed: uiPalette.green,
+    production: uiPalette.cyan,
+    clarification: uiPalette.amber,
+    washing: uiPalette.amber,
+    extrusion: uiPalette.amber,
+    packaging: uiPalette.cyan,
+    cells: uiPalette.green,
+    energy: uiPalette.amber,
+    utility: uiPalette.violet,
+    waste: uiPalette.red,
+    product: uiPalette.cyan,
+  }[kind] || uiPalette.blue;
 }
 
 function hexToRgba(hex, alpha) {
@@ -2290,11 +2306,11 @@ function drawPfdLegend(ctx, rect) {
   const y = 18;
   ctx.save();
   roundRect(ctx, x, y, width, 58, 8);
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.fillStyle = "rgba(8, 12, 18, 0.92)";
   ctx.fill();
-  ctx.strokeStyle = "rgba(23,23,28,0.1)";
+  ctx.strokeStyle = uiPalette.lineStrong;
   ctx.stroke();
-  ctx.font = "700 9px -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.font = `700 9px ${canvasFont}`;
   ctx.textAlign = "left";
   items.forEach((item, index) => {
     const row = Math.floor(index / 2);
@@ -2310,7 +2326,7 @@ function drawPfdLegend(ctx, rect) {
     ctx.lineTo(lx + 18, ly);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = "#555b66";
+    ctx.fillStyle = uiPalette.muted;
     ctx.fillText(item[1], lx + 24, ly + 3);
   });
   ctx.restore();
@@ -2333,13 +2349,13 @@ function roundRect(ctx, x, y, width, height, radius) {
 
 function timelineMetricCatalog() {
   return [
-    { key: "cells", field: "growthIndex", label: "log10 cells", color: "#15845f" },
-    { key: "biomass", field: "biomass", label: "biomass kg", color: "#0f9f8f" },
-    { key: "energy", field: "energy", label: "cumulative kWh", color: "#0071e3" },
-    { key: "medium", field: "medium", label: "medium kg", color: "#5c6ac4" },
-    { key: "oxygen", field: "oxygen", label: "O2 kg", color: "#a96c12" },
-    { key: "co2", field: "co2", label: "CO2 kg", color: "#c3423f" },
-    { key: "utilityWater", field: "utilityWater", label: "utility water kg", color: "#5e6a75" },
+    { key: "cells", field: "growthIndex", label: "log10 cells", color: uiPalette.green },
+    { key: "biomass", field: "biomass", label: "biomass kg", color: uiPalette.cyan },
+    { key: "energy", field: "energy", label: "cumulative kWh", color: uiPalette.blue },
+    { key: "medium", field: "medium", label: "medium kg", color: uiPalette.violet },
+    { key: "oxygen", field: "oxygen", label: "O2 kg", color: uiPalette.amber },
+    { key: "co2", field: "co2", label: "CO2 kg", color: uiPalette.red },
+    { key: "utilityWater", field: "utilityWater", label: "utility water kg", color: "#9aa8b8" },
   ];
 }
 
@@ -2367,24 +2383,24 @@ function drawTimeline(sim, currentTime) {
     growthIndex: Math.log10(Math.max(point.cells, 1)),
   }));
 
-  ctx.fillStyle = "rgba(248,251,253,0.86)";
+  ctx.fillStyle = "rgba(6, 10, 16, 0.92)";
   roundRect(ctx, 10, 10, rect.width - 20, rect.height - 20, 8);
   ctx.fill();
 
   sim.timing.segments.forEach((segment, index) => {
     const x0 = padL + (segment.startH / sim.totalTimeH) * w;
     const x1 = padL + (segment.endH / sim.totalTimeH) * w;
-    ctx.fillStyle = index % 2 === 0 ? "rgba(16,24,32,0.035)" : "rgba(0,113,227,0.035)";
+    ctx.fillStyle = index % 2 === 0 ? "rgba(203,218,229,0.035)" : "rgba(122,183,255,0.045)";
     ctx.fillRect(x0, padT, Math.max(x1 - x0, 1), h);
     if (x1 - x0 > 58) {
-      ctx.fillStyle = "rgba(16,20,24,0.46)";
-      ctx.font = "700 10px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "rgba(203,218,229,0.64)";
+      ctx.font = `700 10px ${canvasFont}`;
       ctx.textAlign = "center";
       ctx.fillText(segment.label, x0 + (x1 - x0) / 2, padT - 10);
     }
   });
 
-  ctx.strokeStyle = "rgba(16,24,32,0.12)";
+  ctx.strokeStyle = "rgba(203,218,229,0.12)";
   ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i += 1) {
     const y = padT + (i / 4) * h;
@@ -2394,12 +2410,12 @@ function drawTimeline(sim, currentTime) {
     ctx.stroke();
   }
 
-  ctx.strokeStyle = "rgba(16,24,32,0.22)";
+  ctx.strokeStyle = "rgba(203,218,229,0.22)";
   ctx.strokeRect(padL, padT, w, h);
   [0, 0.5, 1].forEach((fraction) => {
     const xTick = padL + w * fraction;
-    ctx.fillStyle = "rgba(16,20,24,0.52)";
-    ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.fillStyle = "rgba(203,218,229,0.58)";
+    ctx.font = `10px ${canvasFont}`;
     ctx.textAlign = "center";
     ctx.fillText(`${fmt(sim.totalTimeH * fraction, 0)} h`, xTick, padT + h + 18);
   });
@@ -2410,18 +2426,18 @@ function drawTimeline(sim, currentTime) {
   });
 
   const x = padL + (currentTime / sim.totalTimeH) * w;
-  ctx.strokeStyle = "#101418";
+  ctx.strokeStyle = uiPalette.text;
   ctx.lineWidth = 1.2;
   ctx.beginPath();
   ctx.moveTo(x, padT);
   ctx.lineTo(x, padT + h);
   ctx.stroke();
 
-  ctx.fillStyle = "#101418";
-  ctx.font = "700 12px -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillStyle = uiPalette.text;
+  ctx.font = `700 12px ${canvasFont}`;
   ctx.textAlign = "left";
   ctx.fillText(`${fmt(currentTime, 1)} h · ${currentPhaseLabel(sim, currentTime)}`, Math.min(x + 8, rect.width - 230), padT + 18);
-  ctx.fillStyle = "rgba(16,20,24,0.62)";
+  ctx.fillStyle = uiPalette.muted;
   const topLabels = selectedMetrics.slice(0, 2).map((metric) => {
     const maxValue = Math.max(...chartPoints.map((point) => Math.abs(point[metric.field] || 0)), 1);
     return `${metric.label} max ${metric.key === "cells" ? fmt(maxValue, 1) : fmt(maxValue, 0)}`;
@@ -2440,12 +2456,12 @@ function drawTimeline(sim, currentTime) {
     ctx.beginPath();
     ctx.arc(lx + 5, ly - 4, 4, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "rgba(16,20,24,0.7)";
+    ctx.fillStyle = "rgba(214,226,238,0.78)";
     ctx.textAlign = "left";
-    ctx.font = "700 11px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.font = `700 11px ${canvasFont}`;
     ctx.fillText(metric.label, lx + 15, ly);
   });
-  ctx.fillStyle = "rgba(16,20,24,0.52)";
+  ctx.fillStyle = "rgba(203,218,229,0.58)";
   ctx.textAlign = "right";
   ctx.fillText("normalized per selected signal", padL + w, rect.height - 14);
 }
@@ -2843,6 +2859,21 @@ function stepMarkdown(step, data = {}) {
   ].join("\n");
 }
 
+function exportReportStyle(maxWidth = 1080) {
+  return `<style>
+    :root{color-scheme:dark}
+    *{box-sizing:border-box}
+    body{font-family:"SF Pro Text","SF Pro Display",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;margin:40px;line-height:1.45;color:#f3f7fb;background:radial-gradient(circle at 78% 8%,rgba(52,214,201,.14),transparent 26%),linear-gradient(180deg,#090d13,#05070c 420px,#040609);-webkit-font-smoothing:antialiased}
+    main{max-width:${maxWidth}px;margin:auto}
+    section,.metric{background:linear-gradient(180deg,rgba(18,27,39,.94),rgba(8,12,18,.88));border:1px solid rgba(203,218,229,.14);border-radius:8px;padding:18px;margin:16px 0;box-shadow:0 22px 60px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08)}
+    h1{font-size:34px;margin:0 0 4px} h2{font-size:20px;margin-top:0} h3{font-size:13px;color:#9aa8b8;text-transform:uppercase;letter-spacing:0}
+    p,li{color:#d7e0ea} a{color:#7ab7ff} strong{color:#f3f7fb}
+    code,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:rgba(3,6,10,.62);border:1px solid rgba(203,218,229,.12);border-radius:6px;padding:8px;color:#dbeafe}
+    table{width:100%;border-collapse:collapse;background:rgba(8,12,18,.58)}td,th{border-bottom:1px solid rgba(203,218,229,.12);padding:8px;text-align:left;vertical-align:top}th{color:#dbe6f1}td{color:#d7e0ea}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{margin:0}.metric span{display:block;color:#9aa8b8;font-size:12px;text-transform:uppercase}.metric strong{font-size:22px;color:#f3f7fb}
+  </style>`;
+}
+
 function completeHtmlReport() {
   const sim = simulation || simulate();
   const report = dataForExport("full");
@@ -2921,17 +2952,7 @@ function completeHtmlReport() {
 <head>
   <meta charset="utf-8">
   <title>insilico dynamics Process Export</title>
-  <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:40px;line-height:1.45;color:#17171c;background:#f5f5f7}
-    main{max-width:1080px;margin:auto}
-    section{background:white;border:1px solid #ddd;border-radius:8px;padding:18px;margin:16px 0}
-    h1{font-size:34px;margin-bottom:4px} h2{font-size:20px} h3{font-size:14px;color:#666;text-transform:uppercase}
-    code,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f7f9;border-radius:6px;padding:8px}
-    table{width:100%;border-collapse:collapse;background:white}td,th{border-bottom:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}
-    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-    .metric{background:white;border:1px solid #ddd;border-radius:8px;padding:14px}
-    .metric span{display:block;color:#666;font-size:12px}.metric strong{font-size:22px}
-  </style>
+  ${exportReportStyle(1080)}
 </head>
 <body>
   <main>
@@ -3010,13 +3031,7 @@ function detailHtmlReport(scope) {
 <head>
   <meta charset="utf-8">
   <title>${escapeHtml(title)} Export</title>
-  <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:40px;line-height:1.45;color:#17171c;background:#f5f5f7}
-    main{max-width:900px;margin:auto}
-    section{background:white;border:1px solid #ddd;border-radius:8px;padding:18px;margin:16px 0}
-    h1{font-size:34px;margin-bottom:4px} h2{font-size:20px} h3{font-size:14px;color:#666;text-transform:uppercase}
-    code,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f7f9;border-radius:6px;padding:8px}
-  </style>
+  ${exportReportStyle(900)}
 </head>
 <body>
   <main>
@@ -3060,13 +3075,7 @@ function stepHtmlReport(stepKey) {
 <head>
   <meta charset="utf-8">
   <title>${escapeHtml(step.title)} Export</title>
-  <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:40px;line-height:1.45;color:#17171c;background:#f5f5f7}
-    main{max-width:900px;margin:auto}
-    section{background:white;border:1px solid #ddd;border-radius:8px;padding:18px;margin:16px 0}
-    h1{font-size:34px;margin-bottom:4px} h2{font-size:20px} h3{font-size:14px;color:#666;text-transform:uppercase}
-    code,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f7f9;border-radius:6px;padding:8px}
-  </style>
+  ${exportReportStyle(900)}
 </head>
 <body>
   <main>
