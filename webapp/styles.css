@@ -155,6 +155,12 @@ select {
   font-weight: 700;
 }
 
+.panel-title h1 {
+  max-width: 210px;
+  font-size: 23px;
+  line-height: 1.12;
+}
+
 .brand-lockup {
   display: grid;
   grid-template-columns: 44px 1fr;
