@@ -22,16 +22,16 @@ media_prep:
   filtration_flux_L_m2_h: 250
   sterilization_temperature_C: 121
   composition_g_L:
-    amino_acids: 1.27
-    vitamins: 2.94e-2
-    salts: 9.59
+    amino_acids: 1.271875
+    vitamins: 2.937e-2
+    salts: 9.58901
     proteins: 3.00
-    trace_elements: 5.01e-3
+    trace_elements: 5.005e-3
     glucose: 4.50
     growth_factors_igf1: 5.00e-6
 
 seed_train:
-  doubling_time_h: 24
+  doubling_time_h: 20
   stage_duration_h: 120
   inoculum_volume_L: 0.002
   air_used_for_purging_and_vessel_filling_kg: 33.3
@@ -78,3 +78,5 @@ packaging:
   product_per_entity_kg: 1.0
   container_kg: 0.01
   packaging_loss: 0.0
+  reported_product_entities_per_batch: 2091.69
+  reported_packaged_mass_kg_per_batch: 2112.61
