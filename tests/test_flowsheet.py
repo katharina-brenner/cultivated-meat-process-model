@@ -60,8 +60,13 @@ def test_paper_baseline_mass_balance(config: dict) -> None:
     assert results["washed"].metadata["product_biomass_mass_fraction"] == pytest.approx(
         0.90
     )
-    assert results["packaged"].metadata["pack_units"] == pytest.approx(2_100.5556)
-    assert results["packaged"].components["container"] == pytest.approx(21.00556)
+    assert results["packaged"].mass_kg == pytest.approx(2_112.61, abs=0.01)
+    assert results["packaged"].metadata["pack_units"] == pytest.approx(2_091.69)
+    assert results["packaged"].components["container"] == pytest.approx(20.9169)
+    assert results["packaged"].metadata["filling_calibration_kg"] == pytest.approx(
+        -8.8656,
+        abs=0.01,
+    )
 
 
 def test_utility_demands_and_timing(config: dict) -> None:
