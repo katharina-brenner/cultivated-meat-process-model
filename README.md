@@ -1,6 +1,6 @@
-# insilico dynamics process model
+# Katharina Julia Brenner cultivated meat process model
 
-Process model for cultivated meat production, from media preparation through packaging, exposed as the `insilico dynamics` bioprocess facility interface.
+Process model for cultivated meat production, from media preparation through packaging, exposed as an interactive bioprocess facility interface by Katharina Julia Brenner.
 The baseline is aligned with Brenner et al. (2026), "Decoding cultured meat
 manufacturing: a full process model to identify scale-up bottlenecks."
 
@@ -47,7 +47,7 @@ print(report["energy_kwh"])
 
 ## Web app
 
-Open [webapp/index.html](/Users/katharinajuliabrenner/Documents/GitHub/cultivated-meat-process-model/webapp/index.html) in a browser to use the interactive `insilico dynamics` process facility.
+Open [webapp/index.html](/Users/katharinajuliabrenner/Documents/GitHub/cultivated-meat-process-model/webapp/index.html) in a browser to use the interactive cultivated meat process facility.
 For browser-safe local use, run a static server from the repository root:
 
 ```bash
@@ -76,7 +76,7 @@ action, the app can be opened and used directly from the public URL above.
 - click-through views for `Factory`, `Timeline`, `Data`, and `Downloads`
 - first-page factory map with every major equipment item and animated process stream from media prep through packaged product
 - clickable equipment and streams with bioprocess-specific operation icons, hover-only explanations, and a live inspector for physical properties, reactions, mass balances, utilities, and connected objects
-- light high-end `insilico dynamics` CI with a unified SF Pro/system font stack, warm white surfaces, restrained steel-blue, teal, green, amber, and red process accents
+- light high-end scientific interface with a unified SF Pro/system font stack, warm white surfaces, restrained steel-blue, teal, green, amber, and red process accents
 - plant-intelligence cards for daily output, bottleneck, energy intensity, utility envelope, and process yield
 - Celonis-like process diagram and factory map with equipment icons for media prep, seed expansion, production STR, clarification, washing, extrusion, packaging, and waste
 - paper reference table showing live app values, paper values, and numerical deltas
