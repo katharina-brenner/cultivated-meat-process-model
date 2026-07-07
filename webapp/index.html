@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="insilico dynamics is an interactive cultivated-meat bioprocess facility model with clickable unit operations, streams, equations, mass balances, energy balances, and exportable technical data."
+      content="Interactive cultivated-meat bioprocess facility model by Katharina Julia Brenner, with clickable unit operations, streams, equations, mass balances, energy balances, and exportable technical data."
     />
     <meta name="theme-color" content="#f6f8fb" />
-    <title>insilico dynamics | Bioprocess Facility OS</title>
-    <link rel="stylesheet" href="styles.css?v=light-ci-20260706c" />
+    <title>Katharina Julia Brenner | Cultivated Meat Process Model</title>
+    <link rel="stylesheet" href="styles.css?v=kb-paper-20260707a" />
   </head>
   <body>
     <main class="app-shell" id="app">
       <aside class="control-panel" data-export-scope="parameters">
         <div class="panel-title brand-lockup">
-          <span class="brand-mark">id</span>
+          <span class="brand-mark">KB</span>
           <div>
-            <p class="eyebrow">insilico dynamics</p>
-            <h1>Process OS</h1>
+            <p class="eyebrow">Katharina Julia Brenner</p>
+            <h1>Cultivated Meat Process Model</h1>
           </div>
         </div>
 
@@ -71,7 +71,7 @@
           <label>
             <span>Amino acids</span>
             <output id="aminoOut">1.27 g/L</output>
-            <input id="aminoAcids" type="range" min="0.2" max="5" step="0.01" value="1.27" />
+            <input id="aminoAcids" type="range" min="0.2" max="5" step="any" value="1.271875" />
           </label>
           <label>
             <span>Proteins</span>
@@ -103,7 +103,7 @@
       <section class="workspace">
         <header class="topbar">
           <div>
-            <p class="eyebrow">insilico dynamics</p>
+            <p class="eyebrow">Based on Brenner et al. 2026</p>
             <h2 id="scenarioTitle">Bioprocess facility model</h2>
           </div>
           <div class="topbar-actions">
@@ -346,6 +346,6 @@
     <div id="hoverTooltip" class="hover-tooltip" role="tooltip" hidden></div>
     <div id="exportToast" class="export-toast" role="status" aria-live="polite" hidden></div>
 
-    <script src="app.js?v=light-ci-20260706c"></script>
+    <script src="app.js?v=kb-paper-20260707a"></script>
   </body>
 </html>
