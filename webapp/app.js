@@ -24,10 +24,15 @@ const ciPalette = {
 };
 const canvasFontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif';
 const baselineComposition = {
-  vitamins: 2.94e-2,
-  salts: 9.59,
-  traceElements: 5.01e-3,
+  vitamins: 2.937e-2,
+  salts: 9.58901,
+  traceElements: 5.005e-3,
   growthFactorIgf1: 5.0e-6,
+};
+const paperReportedProduct = {
+  filledBulkKg: 2091.69,
+  packagedKg: 2112.61,
+  entities: 2091.69,
 };
 
 const controls = {
@@ -97,9 +102,9 @@ const pythonBaseline = {
   depletedMediumKg: 15930,
   impuritiesKg: 1000,
   washedKg: 2100.5555555555557,
-  packagedKg: 2121.561111111111,
-  packUnits: 2100.5555555555557,
-  containerKg: 21.005555555555556,
+  packagedKg: paperReportedProduct.packagedKg,
+  packUnits: paperReportedProduct.entities,
+  containerKg: paperReportedProduct.entities * 0.01,
   oxygenKg: 995,
   co2Kg: 1990,
   processCompleteH: 736.26,
@@ -116,6 +121,7 @@ const pythonBaseline = {
   syntheticAirKg: 11506.78,
   massBalanceDifferenceKg: 1982.5903,
 };
+const paperFillFactor = paperReportedProduct.filledBulkKg / pythonBaseline.washedKg;
 
 const presetConfig = {
   main: {
@@ -346,15 +352,18 @@ function processStepCatalog(sim) {
       detail: "1 kg product with 10 g container mass",
       value: `${fmt(sim.downstream.packageUnits, 0)} packs`,
       color: "var(--blue)",
-      inputs: { bulk_product_kg: sim.downstream.washedProductKg, container_kg: sim.downstream.containerKg },
+      inputs: { washed_product_kg: sim.downstream.washedProductKg, filled_bulk_product_kg: sim.downstream.filledBulkProductKg, container_kg: sim.downstream.containerKg },
       outputs: { packaged_product_kg: sim.downstream.packagedKg },
-      utilities: {},
+      utilities: { packaging_entities: sim.downstream.packageUnits, paper_fill_factor: sim.downstream.paperFillFactor },
       equations: [
-        `entities = washed_product_kg / 1 kg`,
+        `filled_bulk_product_kg = washed_product_kg * paper_fill_factor = ${fmtKg(sim.downstream.filledBulkProductKg)}`,
+        `paper_fill_factor = 2091.69 / 2100.5556 = ${sim.downstream.paperFillFactor.toPrecision(6)}`,
+        `entities = filled_bulk_product_kg / 1 kg`,
         `container_kg = entities * 0.01 kg`,
-        `packaged_mass = washed_product + container_mass`,
+        `packaged_mass = filled_bulk_product + container_mass`,
         `product_yield = packaged_product_kg / medium_kg`,
         `net_mass_out = packaged_product + wastes + CO2`,
+        `DS-102 paper reference = 2,091.69 entities and 2,112.61 kg/batch`,
       ],
     },
     ...(sim.timing.closeoutH > 0.01 ? [{
@@ -664,9 +673,11 @@ function simulate() {
   const retainedBufferKg = productBiomassKg * (1 - p.washBiomassFraction) / p.washBiomassFraction;
   const washedProductKg = productBiomassKg + retainedBufferKg;
   const washWasteKg = productDepletedKg + productImpurityKg + p.bufferVolumeL - retainedBufferKg;
-  const packageUnits = washedProductKg;
+  const filledBulkProductKg = washedProductKg * paperFillFactor;
+  const packageUnits = filledBulkProductKg;
   const containerKg = packageUnits * 0.01;
-  const packagedKg = washedProductKg + containerKg;
+  const packagedKg = filledBulkProductKg + containerKg;
+  const fillingCalibrationKg = filledBulkProductKg - washedProductKg;
 
   const seedAgitationKwh = stages.slice(0, -1).reduce((sum, stage) => sum + stage.agitationKwh, 0);
   const productionAgitationKwh = finalStage.agitationKwh;
@@ -738,10 +749,13 @@ function simulate() {
       centrifugeWasteKg,
       retainedBufferKg,
       washedProductKg,
+      filledBulkProductKg,
       washWasteKg,
       packageUnits,
       containerKg,
       packagedKg,
+      fillingCalibrationKg,
+      paperFillFactor,
     },
     energy: {
       mediaHeatKwh,
@@ -880,7 +894,7 @@ function equations(sim) {
     },
     {
       title: "Packaging",
-      expression: `entities = washed_product_kg / 1 kg; container_kg = entities * 0.01 = ${fmtKg(sim.downstream.containerKg)}`,
+      expression: `filled_bulk_product_kg = washed_product_kg * paper_fill_factor; entities = filled_bulk_product_kg / 1 kg; container_kg = entities * 0.01 = ${fmtKg(sim.downstream.containerKg)}`,
     },
     {
       title: "Overall mass checkpoint",
@@ -1188,7 +1202,7 @@ function deviceCatalog(sim) {
     { key: "v103", id: "V-103", title: "Depleted medium store", stepKey: "waste", icon: "wasteTank", x: 842, y: 822, type: "waste tank", value: fmtKg(sim.downstream.depletedWasteKg), properties: { storage_tank_volume_L: 14402.33, stream_id: "S-156" } },
     { key: "wsh101", id: "WSH-101", title: "Biomass washer", stepKey: "washing", icon: "washer", x: 660, y: 672, type: "washer", value: fmtKg(sim.downstream.washedProductKg), properties: { buffer_volume_L: sim.params.bufferVolumeL, target_biomass_fraction: sim.params.washBiomassFraction, thermal_mixing_kwh: sim.energy.washThermalKwh } },
     { key: "xd101", id: "XD-101", title: "Extruder", stepKey: "extrusion", icon: "extruder", x: 842, y: 672, type: "extruder", value: `${fmt(sim.energy.extrusionCoolKwh, 1)} kWh`, properties: { screw_velocity_rpm: 200, outlet_temperature_C: 4, cooling_kwh: sim.energy.extrusionCoolKwh } },
-    { key: "fl101", id: "FL-101", title: "Filler", stepKey: "packaging", icon: "filler", x: 1046, y: 672, type: "filling", value: `${fmt(sim.downstream.packageUnits, 0)} packs`, properties: { product_per_entity_kg: 1, container_kg_each: 0.01, container_total_kg: sim.downstream.containerKg } },
+    { key: "fl101", id: "FL-101", title: "Filler", stepKey: "packaging", icon: "filler", x: 1046, y: 672, type: "filling", value: `${fmt(sim.downstream.packageUnits, 0)} packs`, properties: { product_per_entity_kg: 1, container_kg_each: 0.01, filled_bulk_product_kg: sim.downstream.filledBulkProductKg, container_total_kg: sim.downstream.containerKg, paper_fill_factor: sim.downstream.paperFillFactor, paper_ds102_kg: paperReportedProduct.packagedKg } },
   ].map((device) => {
     const step = stepByKey[device.stepKey];
     return {
@@ -1294,9 +1308,10 @@ function deviceEquations(device, step) {
       "shaft_work_kWh = P_extruder_kW * t_h",
     ],
     filling: [
-      "packages = packaged_product_kg / 1 kg",
+      "filled_bulk_product_kg = washed_product_kg * paper_fill_factor",
+      "packages = filled_bulk_product_kg / 1 kg",
       "container_mass_kg = packages * 0.01 kg",
-      "m_packaged = m_product + container_mass",
+      "m_packaged = filled_bulk_product_kg + container_mass",
     ],
   };
   return [...(byType[device.type] || []), ...stepEquations].slice(0, 7);
@@ -1354,7 +1369,7 @@ function renderFactoryMap(sim, currentTime) {
   const deviceByKey = Object.fromEntries(devices.map((device) => [device.key, device]));
   const streams = streamCatalog(sim);
   factoryMap.innerHTML = `
-    <svg class="factory-svg detailed" viewBox="0 0 1400 920" role="img" aria-label="Clickable insilico dynamics process facility map">
+    <svg class="factory-svg detailed" viewBox="0 0 1400 920" role="img" aria-label="Clickable Katharina Julia Brenner process facility map">
       <defs>
         <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#121923" flood-opacity=".18"/>
@@ -1623,7 +1638,7 @@ function streamEquations(item) {
   if (item.category === "cells") base.push("biomass_kg = cells * cell_mass_kg * viability");
   if (item.category === "energy") base.push("Q_kWh = mass_kg * 4.184 * delta_T / 3600");
   if (item.category === "waste") base.push("waste_total = depleted_medium_waste + wash_waste + removed_impurities");
-  if (item.category === "product") base.push("packaged_mass = washed_product + container_mass");
+  if (item.category === "product") base.push("packaged_mass = filled_bulk_product + container_mass");
   return base;
 }
 
@@ -1668,7 +1683,7 @@ function operationExplanationData(sim) {
   const steps = processStepCatalog(sim);
   return {
     generated_at: new Date().toISOString(),
-    brand: "insilico dynamics",
+    brand: "Katharina Julia Brenner",
     process_steps: steps.map((step) => ({
       key: step.key,
       badge: step.badge,
@@ -2540,13 +2555,17 @@ function downloadDataPackage(sim) {
   const equationsList = allEquationEntries(sim);
   return {
     summary: {
-      brand: "insilico dynamics",
+      brand: "Katharina Julia Brenner",
       scenario: presetConfig[currentPreset].title,
       preset: currentPreset,
       generated_at: new Date().toISOString(),
       final_str_volume_L: sim.params.finalVolumeL,
       peak_vcd_cells_mL: sim.params.peakVcd,
       packaged_product_kg: sim.downstream.packagedKg,
+      paper_reported_ds102_kg: paperReportedProduct.packagedKg,
+      paper_reported_ds102_entities: paperReportedProduct.entities,
+      filled_bulk_product_kg: sim.downstream.filledBulkProductKg,
+      filling_calibration_kg: sim.downstream.fillingCalibrationKg,
       biomass_kg: sim.reaction.biomassKg,
       total_process_time_h: sim.totalTimeH,
       time_balance_h: {
@@ -2776,7 +2795,7 @@ function toMarkdown(scope = "full") {
   if (data.processStep) return stepMarkdown(data.processStep, data);
   if (data.stage) {
     return [
-      "# insilico dynamics Stage Report",
+      "# Katharina Julia Brenner Stage Report",
       "",
       `Scenario: ${data.scenarioTitle}`,
       `Scope: ${data.scope}`,
@@ -2788,7 +2807,7 @@ function toMarkdown(scope = "full") {
   }
   const steps = processStepCatalog(sim);
   return [
-    "# insilico dynamics Process Report",
+    "# Katharina Julia Brenner Process Report",
     "",
     `Scenario: ${presetConfig[currentPreset].title}`,
     `Final volume: ${fmt(sim.params.finalVolumeL)} L`,
@@ -2998,14 +3017,14 @@ function completeHtmlReport() {
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>insilico dynamics Process Export</title>
+  <title>Katharina Julia Brenner Process Export</title>
   <style>
     ${reportPrintStyles()}
   </style>
 </head>
 <body>
   <main>
-    <h1>insilico dynamics Process Export</h1>
+    <h1>Katharina Julia Brenner Process Export</h1>
     <p>${escapeHtml(presetConfig[currentPreset].title)} · generated ${escapeHtml(report.generatedAt)}</p>
     <div class="grid">
       <div class="metric"><span>Packaged mass</span><strong>${escapeHtml(fmtKg(sim.downstream.packagedKg))}</strong></div>
@@ -3287,15 +3306,15 @@ contextMenu.addEventListener("click", async (event) => {
   if (!action) return;
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
   if (action === "json") {
-    download(`insilico-dynamics-${exportScope}-${stamp}.json`, "application/json", JSON.stringify(dataForExport(exportScope), null, 2));
+    download(`katharina-brenner-${exportScope}-${stamp}.json`, "application/json", JSON.stringify(dataForExport(exportScope), null, 2));
     showToast(`Downloaded ${exportScope} JSON`);
   }
   if (action === "csv") {
-    download(`insilico-dynamics-${exportScope}-${stamp}.csv`, "text/csv", toCsv(dataForExport(exportScope)));
+    download(`katharina-brenner-${exportScope}-${stamp}.csv`, "text/csv", toCsv(dataForExport(exportScope)));
     showToast(`Downloaded ${exportScope} CSV`);
   }
   if (action === "markdown") {
-    download(`insilico-dynamics-${exportScope}-report-${stamp}.md`, "text/markdown", toMarkdown(exportScope));
+    download(`katharina-brenner-${exportScope}-report-${stamp}.md`, "text/markdown", toMarkdown(exportScope));
     showToast(`Downloaded ${exportScope} report`);
   }
   if (action === "copy-equations") {
@@ -3314,7 +3333,7 @@ document.addEventListener("click", (event) => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
   const stepKey = button.dataset.stepExport;
   const step = processStepCatalog(simulation || simulate()).find((item) => item.key === stepKey);
-  download(`insilico-dynamics-step-${safeFilename(stepKey)}-${stamp}.html`, "text/html", stepHtmlReport(stepKey));
+  download(`katharina-brenner-step-${safeFilename(stepKey)}-${stamp}.html`, "text/html", stepHtmlReport(stepKey));
   showToast(`Downloaded ${step ? step.title : stepKey} step report`);
 });
 
@@ -3325,7 +3344,7 @@ document.addEventListener("click", (event) => {
   event.stopPropagation();
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
   const scope = button.dataset.detailExport;
-  download(`insilico-dynamics-factory-${safeFilename(scope)}-${stamp}.html`, "text/html", detailHtmlReport(scope));
+  download(`katharina-brenner-factory-${safeFilename(scope)}-${stamp}.html`, "text/html", detailHtmlReport(scope));
   showToast("Factory detail report downloaded");
 });
 
@@ -3369,7 +3388,7 @@ processDiagram.addEventListener("click", (event) => {
 
 document.getElementById("downloadButton").addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`insilico-dynamics-complete-process-${stamp}.html`, "text/html", completeHtmlReport());
+  download(`katharina-brenner-complete-process-${stamp}.html`, "text/html", completeHtmlReport());
   showToast("Complete process report downloaded");
 });
 
@@ -3382,37 +3401,37 @@ document.querySelectorAll(".view-tab").forEach((button) => {
 
 document.getElementById("exportHtmlButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`insilico-dynamics-complete-process-${stamp}.html`, "text/html", completeHtmlReport());
+  download(`katharina-brenner-complete-process-${stamp}.html`, "text/html", completeHtmlReport());
   showToast("Complete HTML report downloaded");
 });
 
 document.getElementById("exportJsonButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`insilico-dynamics-full-${stamp}.json`, "application/json", JSON.stringify(dataForExport("full"), null, 2));
+  download(`katharina-brenner-full-${stamp}.json`, "application/json", JSON.stringify(dataForExport("full"), null, 2));
   showToast("Full JSON downloaded");
 });
 
 document.getElementById("exportDataPackageButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`insilico-dynamics-data-package-${stamp}.json`, "application/json", JSON.stringify(dataForExport("data-package"), null, 2));
+  download(`katharina-brenner-data-package-${stamp}.json`, "application/json", JSON.stringify(dataForExport("data-package"), null, 2));
   showToast("Data package JSON downloaded");
 });
 
 document.getElementById("exportNotesButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`insilico-dynamics-operation-notes-${stamp}.json`, "application/json", JSON.stringify(dataForExport("operation-notes"), null, 2));
+  download(`katharina-brenner-operation-notes-${stamp}.json`, "application/json", JSON.stringify(dataForExport("operation-notes"), null, 2));
   showToast("Operation notes JSON downloaded");
 });
 
 document.getElementById("exportCsvButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`insilico-dynamics-full-${stamp}.csv`, "text/csv", toCsv(dataForExport("full")));
+  download(`katharina-brenner-full-${stamp}.csv`, "text/csv", toCsv(dataForExport("full")));
   showToast("Full CSV downloaded");
 });
 
 document.getElementById("exportMdButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`insilico-dynamics-full-${stamp}.md`, "text/markdown", toMarkdown("full"));
+  download(`katharina-brenner-full-${stamp}.md`, "text/markdown", toMarkdown("full"));
   showToast("Markdown report downloaded");
 });
 
