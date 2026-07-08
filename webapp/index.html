@@ -9,6 +9,358 @@
     />
     <meta name="theme-color" content="#f6f8fb" />
     <title>Cultivated Meat Process Model | Brenner et al. 2026</title>
+    <link rel="stylesheet" href="styles.css?v=kb-paper-20260708c" />
+  </head>
+  <body>
+    <main class="app-shell" id="app">
+      <aside class="control-panel" data-export-scope="parameters">
+        <div class="panel-title brand-lockup">
+          <span class="brand-mark">CM</span>
+          <div>
+            <p class="eyebrow">Cultivated meat bioprocess</p>
+            <h1>Cultivated Meat Process Model</h1>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h2>Biology</h2>
+          <label>
+            <span>Final STR volume</span>
+            <output id="finalVolumeOut">20000 L</output>
+            <input id="finalVolume" type="range" min="2000" max="30000" step="500" value="20000" />
+          </label>
+          <label>
+            <span>Peak viable cell density</span>
+            <output id="peakVcdOut">5.0e7 cells/mL</output>
+            <input id="peakVcd" type="range" min="10000000" max="100000000" step="1000000" value="50000000" />
+          </label>
+          <label>
+            <span>Doubling time</span>
+            <output id="doublingOut">20 h</output>
+            <input id="doublingTime" type="range" min="16" max="65" step="1" value="20" />
+          </label>
+          <label>
+            <span>Culture duration per stage</span>
+            <output id="stageDurationOut">120 h</output>
+            <input id="stageDuration" type="range" min="48" max="168" step="6" value="120" />
+          </label>
+          <label>
+            <span>Cell mass</span>
+            <output id="cellMassOut">2.0 ng</output>
+            <input id="cellMass" type="range" min="0.8" max="4" step="0.1" value="2" />
+          </label>
+          <label>
+            <span>Culture viability factor</span>
+            <output id="viabilityOut">99.5%</output>
+            <input id="viability" type="range" min="70" max="100" step="0.5" value="99.5" />
+          </label>
+        </div>
+
+        <div class="control-group">
+          <h2>Medium</h2>
+          <label>
+            <span>Sterile filtration share</span>
+            <output id="sterileOut">90%</output>
+            <input id="sterileFraction" type="range" min="50" max="95" step="1" value="90" />
+          </label>
+          <label>
+            <span>Glucose</span>
+            <output id="glucoseOut">4.50 g/L</output>
+            <input id="glucose" type="range" min="1" max="10" step="0.1" value="4.5" />
+          </label>
+          <label>
+            <span>Amino acids</span>
+            <output id="aminoOut">1.27 g/L</output>
+            <input id="aminoAcids" type="range" min="0.2" max="5" step="any" value="1.271875" />
+          </label>
+          <label>
+            <span>Proteins</span>
+            <output id="proteinOut">3.00 g/L</output>
+            <input id="proteins" type="range" min="0" max="10" step="0.1" value="3" />
+          </label>
+        </div>
+
+        <div class="control-group">
+          <h2>Downstream</h2>
+          <label>
+            <span>Biomass recovery</span>
+            <output id="recoveryOut">95%</output>
+            <input id="recovery" type="range" min="75" max="99" step="0.5" value="95" />
+          </label>
+          <label>
+            <span>Washed biomass fraction</span>
+            <output id="washFractionOut">90%</output>
+            <input id="washFraction" type="range" min="70" max="98" step="1" value="90" />
+          </label>
+          <label>
+            <span>Buffer volume</span>
+            <output id="bufferOut">2000 L</output>
+            <input id="bufferVolume" type="range" min="200" max="5000" step="100" value="2000" />
+          </label>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Based on Brenner et al. 2026</p>
+            <h2 id="scenarioTitle">Bioprocess facility model</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="playButton" class="secondary-button icon-button" type="button" aria-label="Play process animation">
+              <span class="button-icon">&gt;</span>
+              <span id="playButtonText">Play</span>
+            </button>
+            <button id="downloadButton" class="primary-button icon-button" type="button" aria-label="Export complete process report">
+              <span class="button-icon">v</span>
+              <span>Export model</span>
+            </button>
+          </div>
+        </header>
+
+        <nav class="view-tabs" aria-label="Process views">
+          <button type="button" class="view-tab active" data-view="plant">Factory</button>
+          <button type="button" class="view-tab" data-view="process">Timeline</button>
+          <button type="button" class="view-tab" data-view="model">Data</button>
+          <button type="button" class="view-tab" data-view="exports">Downloads</button>
+        </nav>
+
+        <section class="panel factory-control view-panel active" data-view-panel="plant" data-export-scope="plant">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live facility map</p>
+              <h2>Digital process plant</h2>
+            </div>
+            <span id="factoryStatus">Live process</span>
+          </div>
+          <div id="plantInsightStrip" class="plant-insight-strip" data-export-scope="plant-intelligence"></div>
+          <div class="factory-layout">
+            <div id="factoryMap" class="factory-map" aria-label="Clickable production plant"></div>
+            <aside id="unitInspector" class="unit-inspector" aria-label="Selected unit details"></aside>
+          </div>
+          <div id="referenceDeltaStrip" class="reference-delta-strip"></div>
+        </section>
+
+        <section class="metric-grid view-panel active" data-view-panel="plant" data-export-scope="summary">
+          <article class="metric">
+            <span>Packaged mass</span>
+            <strong id="packagedMass">0 kg</strong>
+          </article>
+          <article class="metric">
+            <span>Final biomass</span>
+            <strong id="biomassMass">0 kg</strong>
+          </article>
+          <article class="metric">
+            <span>Total process time</span>
+            <strong id="totalTime">0 h</strong>
+          </article>
+          <article class="metric">
+            <span>Energy estimate</span>
+            <strong id="energyTotal">0 kWh</strong>
+          </article>
+          <article class="metric">
+            <span>Medium demand</span>
+            <strong id="mediumDemand">0 kg</strong>
+          </article>
+        </section>
+
+        <section class="hero-surface view-panel" data-view-panel="process" data-export-scope="process">
+          <div class="hero-copy">
+            <div>
+              <p class="eyebrow">Timeline view</p>
+              <h3>Process flow over time</h3>
+            </div>
+            <div class="utility-rail" id="utilityRail"></div>
+          </div>
+
+          <div class="process-stage" id="processDiagram" aria-label="Process diagram"></div>
+
+          <div class="plant-preview">
+            <div class="preview-heading">
+              <span>PFD plant view</span>
+              <strong id="activeUnit">Media prep</strong>
+            </div>
+            <canvas id="processCanvas" width="1600" height="760" aria-label="Process flow diagram with engineering equipment symbols"></canvas>
+          </div>
+
+          <div class="time-strip">
+            <label>
+              <span>Process time</span>
+              <output id="timeOut">0 h</output>
+              <input id="timeSlider" type="range" min="0" max="720" step="1" value="0" />
+            </label>
+            <div class="time-meta">
+              <span id="playExplanation">Play animates the process clock at 18 process-hours per second.</span>
+              <strong id="timeDetail">0 h elapsed / 0 h remaining</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="analysis-grid view-panel" data-view-panel="model">
+          <article class="panel" data-export-scope="timeline">
+            <div class="panel-heading">
+              <h2>Time response</h2>
+              <span id="currentStage">Media prep</span>
+            </div>
+            <div id="timelineMetricControls" class="timeline-metric-controls" aria-label="Timeline variables">
+              <label><input type="checkbox" data-timeline-metric="cells" checked /> <span>Cells</span></label>
+              <label><input type="checkbox" data-timeline-metric="biomass" checked /> <span>Biomass</span></label>
+              <label><input type="checkbox" data-timeline-metric="energy" checked /> <span>Energy</span></label>
+              <label><input type="checkbox" data-timeline-metric="medium" /> <span>Medium</span></label>
+              <label><input type="checkbox" data-timeline-metric="oxygen" /> <span>O2</span></label>
+              <label><input type="checkbox" data-timeline-metric="co2" /> <span>CO2</span></label>
+              <label><input type="checkbox" data-timeline-metric="utilityWater" /> <span>Utility water</span></label>
+            </div>
+            <canvas id="timelineCanvas" width="980" height="360" aria-label="Selectable process response curves over time"></canvas>
+            <div id="timeBalanceStrip" class="time-balance-strip" aria-label="Process time balance"></div>
+          </article>
+
+          <article class="panel" data-export-scope="streams">
+            <div class="panel-heading">
+              <h2>Key flows</h2>
+              <span>full table in downloads</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Stream</th>
+                    <th>In</th>
+                    <th>Out</th>
+                  </tr>
+                </thead>
+                <tbody id="streamTable"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel reference-values view-panel" data-view-panel="model" data-export-scope="reference-values">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Paper reference</p>
+              <h2>Reference values and live deltas</h2>
+            </div>
+            <span id="referenceStatus">live deltas</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Value</th>
+                  <th>Live app</th>
+                  <th>Paper reference</th>
+                  <th>Delta</th>
+                </tr>
+              </thead>
+              <tbody id="referenceTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="analysis-grid bottom-grid view-panel" data-view-panel="equations">
+          <article class="panel" data-export-scope="equations">
+            <div class="panel-heading">
+              <h2>Chemical, physical, and mass equations</h2>
+              <span>active model</span>
+            </div>
+            <div id="equationList" class="equation-list"></div>
+          </article>
+
+          <article class="panel" data-export-scope="stages">
+            <div class="panel-heading">
+              <h2>Process steps</h2>
+              <span id="stepCount">0 steps</span>
+            </div>
+            <div id="stageCards" class="stage-list"></div>
+          </article>
+        </section>
+
+        <section class="panel export-center view-panel" data-view-panel="exports" data-export-scope="exports">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Downloads</p>
+              <h2>Complete technical data package</h2>
+            </div>
+            <span>HTML, JSON, CSV, Markdown</span>
+          </div>
+          <div class="download-scenario" data-export-scope="scenarios">
+            <label for="downloadScenario">
+              <span>Export scenario</span>
+              <select id="downloadScenario">
+                <option value="main">90:10 sterile split</option>
+                <option value="heat">50:50 sterile split</option>
+                <option value="local">Local scale</option>
+                <option value="str">STR-only expansion</option>
+              </select>
+            </label>
+          </div>
+          <div id="downloadSummary" class="download-summary"></div>
+          <div class="export-actions">
+            <button id="exportHtmlButton" class="primary-button icon-button" type="button">
+              <span class="button-icon">v</span>
+              <span>Technical HTML</span>
+            </button>
+            <button id="exportJsonButton" class="secondary-button icon-button" type="button">
+              <span class="button-icon">{ }</span>
+              <span>Full model JSON</span>
+            </button>
+            <button id="exportDataPackageButton" class="secondary-button icon-button" type="button">
+              <span class="button-icon">S</span>
+              <span>Data package JSON</span>
+            </button>
+            <button id="exportNotesButton" class="secondary-button icon-button" type="button">
+              <span class="button-icon">?</span>
+              <span>Operation notes JSON</span>
+            </button>
+            <button id="exportCsvButton" class="secondary-button icon-button" type="button">
+              <span class="button-icon">#</span>
+              <span>Flattened CSV</span>
+            </button>
+            <button id="exportMdButton" class="secondary-button icon-button" type="button">
+              <span class="button-icon">M</span>
+              <span>Markdown</span>
+            </button>
+          </div>
+          <div id="stepExportList" class="step-export-list"></div>
+        </section>
+
+        <section class="panel reference-panel view-panel" data-view-panel="exports" data-export-scope="references">
+          <div class="panel-heading">
+            <h2>Reference downloads</h2>
+            <span>no image preview</span>
+          </div>
+          <div id="referenceAssets" class="reference-grid"></div>
+        </section>
+      </section>
+    </main>
+    <footer class="site-attribution">© Katharina Julia Brenner</footer>
+
+    <nav id="contextMenu" class="context-menu" hidden>
+      <button type="button" data-action="json">Download scope JSON</button>
+      <button type="button" data-action="csv">Download scope CSV</button>
+      <button type="button" data-action="markdown">Download scope report</button>
+      <button type="button" data-action="copy-equations">Copy equations</button>
+    </nav>
+
+    <div id="downloadShelf" class="download-shelf" hidden></div>
+    <div id="hoverTooltip" class="hover-tooltip" role="tooltip" hidden></div>
+    <div id="exportToast" class="export-toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="app.js?v=kb-paper-20260708c"></script>
+  </body>
+</html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Interactive cultivated-meat bioprocess facility model based on Brenner et al. 2026, with clickable unit operations, streams, equations, mass balances, energy balances, and exportable technical data."
+    />
+    <meta name="theme-color" content="#f6f8fb" />
+    <title>Cultivated Meat Process Model | Brenner et al. 2026</title>
     <link rel="stylesheet" href="styles.css?v=kb-paper-20260708b" />
   </head>
   <body>
