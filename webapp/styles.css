@@ -131,6 +131,20 @@ select {
   min-width: 0;
 }
 
+.site-attribution {
+  position: fixed;
+  right: 18px;
+  bottom: 8px;
+  z-index: 40;
+  pointer-events: none;
+  padding: 2px 4px;
+  color: rgba(102, 112, 133, 0.64);
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 520;
+  letter-spacing: 0;
+}
+
 .topbar {
   position: relative;
   top: auto;
