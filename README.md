@@ -1,6 +1,6 @@
-# Katharina Julia Brenner cultivated meat process model
+# Cultivated meat process model
 
-Process model for cultivated meat production, from media preparation through packaging, exposed as an interactive bioprocess facility interface by Katharina Julia Brenner.
+Process model for cultivated meat production, from media preparation through packaging, exposed as an interactive bioprocess facility interface.
 The baseline is aligned with Brenner et al. (2026), "Decoding cultured meat
 manufacturing: a full process model to identify scale-up bottlenecks."
 
