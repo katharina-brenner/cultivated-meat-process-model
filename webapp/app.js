@@ -23,6 +23,9 @@ const ciPalette = {
   line: "#dbe3ec",
 };
 const canvasFontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif';
+const modelName = "Cultivated Meat Process Model";
+const modelAttribution = "Katharina Julia Brenner";
+const exportFilePrefix = "cultivated-meat-process-model";
 const baselineComposition = {
   vitamins: 2.937e-2,
   salts: 9.58901,
@@ -1369,7 +1372,7 @@ function renderFactoryMap(sim, currentTime) {
   const deviceByKey = Object.fromEntries(devices.map((device) => [device.key, device]));
   const streams = streamCatalog(sim);
   factoryMap.innerHTML = `
-    <svg class="factory-svg detailed" viewBox="0 0 1400 920" role="img" aria-label="Clickable Katharina Julia Brenner process facility map">
+    <svg class="factory-svg detailed" viewBox="0 0 1400 920" role="img" aria-label="Clickable cultivated meat process facility map">
       <defs>
         <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#121923" flood-opacity=".18"/>
@@ -1683,7 +1686,7 @@ function operationExplanationData(sim) {
   const steps = processStepCatalog(sim);
   return {
     generated_at: new Date().toISOString(),
-    brand: "Katharina Julia Brenner",
+    model: modelName,
     process_steps: steps.map((step) => ({
       key: step.key,
       badge: step.badge,
@@ -2555,7 +2558,7 @@ function downloadDataPackage(sim) {
   const equationsList = allEquationEntries(sim);
   return {
     summary: {
-      brand: "Katharina Julia Brenner",
+      model: modelName,
       scenario: presetConfig[currentPreset].title,
       preset: currentPreset,
       generated_at: new Date().toISOString(),
@@ -2795,7 +2798,7 @@ function toMarkdown(scope = "full") {
   if (data.processStep) return stepMarkdown(data.processStep, data);
   if (data.stage) {
     return [
-      "# Katharina Julia Brenner Stage Report",
+      `# ${modelName} Stage Report`,
       "",
       `Scenario: ${data.scenarioTitle}`,
       `Scope: ${data.scope}`,
@@ -2803,11 +2806,13 @@ function toMarkdown(scope = "full") {
       "```json",
       JSON.stringify(data.stage, null, 2),
       "```",
+      "",
+      `<small>${modelAttribution}</small>`,
     ].join("\n");
   }
   const steps = processStepCatalog(sim);
   return [
-    "# Katharina Julia Brenner Process Report",
+    `# ${modelName} Process Report`,
     "",
     `Scenario: ${presetConfig[currentPreset].title}`,
     `Final volume: ${fmt(sim.params.finalVolumeL)} L`,
@@ -2834,6 +2839,8 @@ function toMarkdown(scope = "full") {
     "```json",
     JSON.stringify(data, null, 2),
     "```",
+    "",
+    `<small>${modelAttribution}</small>`,
   ].join("\n");
 }
 
@@ -2867,6 +2874,8 @@ function equipmentMarkdown(data) {
     "",
     "## Connected streams",
     ...data.connectedStreams.map((streamItem) => `- ${streamItem.title}: ${streamItem.from} -> ${streamItem.to}, ${streamItem.value}`),
+    "",
+    `<small>${modelAttribution}</small>`,
   ].join("\n");
 }
 
@@ -2895,6 +2904,8 @@ function streamMarkdown(data) {
     "",
     "## Connected equipment",
     ...data.connectedEquipment.map((device) => `- ${device.id} ${device.title}: ${device.type}`),
+    "",
+    `<small>${modelAttribution}</small>`,
   ].join("\n");
 }
 
@@ -2923,6 +2934,8 @@ function stepMarkdown(step, data = {}) {
     "```json",
     JSON.stringify(step.utilities, null, 2),
     "```",
+    "",
+    `<small>${modelAttribution}</small>`,
   ].join("\n");
 }
 
@@ -2937,6 +2950,7 @@ function reportPrintStyles() {
     p{color:${ciPalette.muted}} code,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f8fafc;border:1px solid #e8eef5;border-radius:6px;padding:8px;color:${ciPalette.graphite}}
     table{width:100%;border-collapse:collapse;background:${ciPalette.surface};border:1px solid ${ciPalette.line};border-radius:8px;overflow:hidden}td,th{border-bottom:1px solid ${ciPalette.line};padding:8px;text-align:left;vertical-align:top}th{color:${ciPalette.muted};font-size:12px;text-transform:uppercase}
     .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{background:${ciPalette.surface};border:1px solid ${ciPalette.line};border-radius:8px;padding:14px}.metric span{display:block;color:${ciPalette.muted};font-size:12px}.metric strong{font-size:22px;color:${ciPalette.graphite}}
+    .report-attribution{margin-top:28px;text-align:right;color:${ciPalette.muted};font-size:10px;line-height:1.2;opacity:.68}
   `;
 }
 
@@ -3017,14 +3031,14 @@ function completeHtmlReport() {
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Katharina Julia Brenner Process Export</title>
+  <title>${escapeHtml(modelName)} Process Export</title>
   <style>
     ${reportPrintStyles()}
   </style>
 </head>
 <body>
   <main>
-    <h1>Katharina Julia Brenner Process Export</h1>
+    <h1>${escapeHtml(modelName)} Process Export</h1>
     <p>${escapeHtml(presetConfig[currentPreset].title)} · generated ${escapeHtml(report.generatedAt)}</p>
     <div class="grid">
       <div class="metric"><span>Packaged mass</span><strong>${escapeHtml(fmtKg(sim.downstream.packagedKg))}</strong></div>
@@ -3077,6 +3091,7 @@ function completeHtmlReport() {
       <h2>Full JSON payload</h2>
       <pre>${escapeHtml(JSON.stringify(report, null, 2))}</pre>
     </section>
+    <p class="report-attribution">${escapeHtml(modelAttribution)}</p>
   </main>
 </body>
 </html>`;
@@ -3132,6 +3147,7 @@ function detailHtmlReport(scope) {
       <h2>JSON payload</h2>
       <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
     </section>
+    <p class="report-attribution">${escapeHtml(modelAttribution)}</p>
   </main>
 </body>
 </html>`;
@@ -3181,6 +3197,7 @@ function stepHtmlReport(stepKey) {
       <h2>JSON payload</h2>
       <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
     </section>
+    <p class="report-attribution">${escapeHtml(modelAttribution)}</p>
   </main>
 </body>
 </html>`;
@@ -3306,15 +3323,15 @@ contextMenu.addEventListener("click", async (event) => {
   if (!action) return;
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
   if (action === "json") {
-    download(`katharina-brenner-${exportScope}-${stamp}.json`, "application/json", JSON.stringify(dataForExport(exportScope), null, 2));
+    download(`${exportFilePrefix}-${exportScope}-${stamp}.json`, "application/json", JSON.stringify(dataForExport(exportScope), null, 2));
     showToast(`Downloaded ${exportScope} JSON`);
   }
   if (action === "csv") {
-    download(`katharina-brenner-${exportScope}-${stamp}.csv`, "text/csv", toCsv(dataForExport(exportScope)));
+    download(`${exportFilePrefix}-${exportScope}-${stamp}.csv`, "text/csv", toCsv(dataForExport(exportScope)));
     showToast(`Downloaded ${exportScope} CSV`);
   }
   if (action === "markdown") {
-    download(`katharina-brenner-${exportScope}-report-${stamp}.md`, "text/markdown", toMarkdown(exportScope));
+    download(`${exportFilePrefix}-${exportScope}-report-${stamp}.md`, "text/markdown", toMarkdown(exportScope));
     showToast(`Downloaded ${exportScope} report`);
   }
   if (action === "copy-equations") {
@@ -3333,7 +3350,7 @@ document.addEventListener("click", (event) => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
   const stepKey = button.dataset.stepExport;
   const step = processStepCatalog(simulation || simulate()).find((item) => item.key === stepKey);
-  download(`katharina-brenner-step-${safeFilename(stepKey)}-${stamp}.html`, "text/html", stepHtmlReport(stepKey));
+  download(`${exportFilePrefix}-step-${safeFilename(stepKey)}-${stamp}.html`, "text/html", stepHtmlReport(stepKey));
   showToast(`Downloaded ${step ? step.title : stepKey} step report`);
 });
 
@@ -3344,7 +3361,7 @@ document.addEventListener("click", (event) => {
   event.stopPropagation();
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
   const scope = button.dataset.detailExport;
-  download(`katharina-brenner-factory-${safeFilename(scope)}-${stamp}.html`, "text/html", detailHtmlReport(scope));
+  download(`${exportFilePrefix}-factory-${safeFilename(scope)}-${stamp}.html`, "text/html", detailHtmlReport(scope));
   showToast("Factory detail report downloaded");
 });
 
@@ -3388,7 +3405,7 @@ processDiagram.addEventListener("click", (event) => {
 
 document.getElementById("downloadButton").addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`katharina-brenner-complete-process-${stamp}.html`, "text/html", completeHtmlReport());
+  download(`${exportFilePrefix}-complete-process-${stamp}.html`, "text/html", completeHtmlReport());
   showToast("Complete process report downloaded");
 });
 
@@ -3401,37 +3418,37 @@ document.querySelectorAll(".view-tab").forEach((button) => {
 
 document.getElementById("exportHtmlButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`katharina-brenner-complete-process-${stamp}.html`, "text/html", completeHtmlReport());
+  download(`${exportFilePrefix}-complete-process-${stamp}.html`, "text/html", completeHtmlReport());
   showToast("Complete HTML report downloaded");
 });
 
 document.getElementById("exportJsonButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`katharina-brenner-full-${stamp}.json`, "application/json", JSON.stringify(dataForExport("full"), null, 2));
+  download(`${exportFilePrefix}-full-${stamp}.json`, "application/json", JSON.stringify(dataForExport("full"), null, 2));
   showToast("Full JSON downloaded");
 });
 
 document.getElementById("exportDataPackageButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`katharina-brenner-data-package-${stamp}.json`, "application/json", JSON.stringify(dataForExport("data-package"), null, 2));
+  download(`${exportFilePrefix}-data-package-${stamp}.json`, "application/json", JSON.stringify(dataForExport("data-package"), null, 2));
   showToast("Data package JSON downloaded");
 });
 
 document.getElementById("exportNotesButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`katharina-brenner-operation-notes-${stamp}.json`, "application/json", JSON.stringify(dataForExport("operation-notes"), null, 2));
+  download(`${exportFilePrefix}-operation-notes-${stamp}.json`, "application/json", JSON.stringify(dataForExport("operation-notes"), null, 2));
   showToast("Operation notes JSON downloaded");
 });
 
 document.getElementById("exportCsvButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`katharina-brenner-full-${stamp}.csv`, "text/csv", toCsv(dataForExport("full")));
+  download(`${exportFilePrefix}-full-${stamp}.csv`, "text/csv", toCsv(dataForExport("full")));
   showToast("Full CSV downloaded");
 });
 
 document.getElementById("exportMdButton")?.addEventListener("click", () => {
   const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
-  download(`katharina-brenner-full-${stamp}.md`, "text/markdown", toMarkdown("full"));
+  download(`${exportFilePrefix}-full-${stamp}.md`, "text/markdown", toMarkdown("full"));
   showToast("Markdown report downloaded");
 });
 
