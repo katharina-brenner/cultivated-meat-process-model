@@ -154,6 +154,27 @@ const referenceAssets = [
   "Split tab.png",
   "Transient phase.png",
 ].map((name) => `assets/reference/${name}`);
+const paperTitle = "Decoding cultured meat manufacturing: a full process model to identify scale-up bottlenecks";
+const paperLinks = [
+  {
+    key: "researchgate",
+    label: "ResearchGate paper",
+    url: "https://www.researchgate.net/search/publication?q=Decoding%20cultured%20meat%20manufacturing%3A%20a%20full%20process%20model%20to%20identify%20scale-up%20bottlenecks",
+    note: "Exact-title ResearchGate link",
+  },
+  {
+    key: "frontiers-pdf",
+    label: "Official PDF",
+    url: "https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2026.1844185/pdf",
+    note: "Open-access PDF download",
+  },
+  {
+    key: "doi",
+    label: "DOI",
+    url: "https://doi.org/10.3389/fnut.2026.1844185",
+    note: "Permanent paper link",
+  },
+];
 
 function escapeHtml(value) {
   return String(value)
@@ -1167,7 +1188,16 @@ function renderReferenceAssets() {
     target.innerHTML = "";
     return;
   }
-  target.innerHTML = referenceAssets
+  const paperTiles = paperLinks
+    .map((link) => `
+      <a class="reference-tile reference-paper" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer" data-export-scope="references">
+        <span class="button-icon">↗</span>
+        <strong>${escapeHtml(link.label)}</strong>
+        <small>${escapeHtml(link.note)}</small>
+      </a>
+    `)
+    .join("");
+  const assetTiles = referenceAssets
     .map((asset) => {
       const label = asset.split("/").pop().replace(".png", "");
       return `
@@ -1179,6 +1209,7 @@ function renderReferenceAssets() {
       `;
     })
     .join("");
+  target.innerHTML = paperTiles + assetTiles;
 }
 
 function deviceCatalog(sim) {
@@ -2648,6 +2679,7 @@ function downloadDataPackage(sim) {
     referenceComparisons: referenceComparisons(sim),
     plantIntelligence: plantInsights(sim),
     operationExplanations: operationExplanationData(sim),
+    paperLinks: paperLinks.map((link) => ({ ...link, title: paperTitle })),
     referenceAssetManifest: referenceAssets.map((asset) => ({
       file: asset,
       download_section_only: true,
@@ -2738,6 +2770,7 @@ function dataForExport(scope = "full") {
     plantIntelligence: plantInsights(sim),
     selectedProcessStep: selectedStepKey,
     selectedFactoryDetail: selectedDetail,
+    paperLinks,
     referenceAssets,
     operationExplanations: operationExplanationData(sim),
   };
@@ -2757,7 +2790,7 @@ function dataForExport(scope = "full") {
   }
   if (scope === "process") return { processSteps: report.processSteps, utility: report.utility };
   if (scope === "stages") return { stages: report.stages, processSteps: report.processSteps };
-  if (scope === "references") return { referenceAssets: report.referenceAssets };
+  if (scope === "references") return { paperLinks: report.paperLinks, referenceAssets: report.referenceAssets };
   if (scope === "reference-values") return { referenceComparisons: report.referenceComparisons };
   if (scope === "plant") return { devices: report.devices, streams: report.streams, processSteps: report.processSteps, referenceComparisons: report.referenceComparisons, plantIntelligence: report.plantIntelligence };
   if (scope === "data-package") return report.dataPackage;
@@ -2967,6 +3000,9 @@ function completeHtmlReport() {
   const referencesHtml = referenceAssets
     .map((asset) => `<li><a href="${escapeHtml(asset)}">${escapeHtml(asset)}</a></li>`)
     .join("");
+  const paperLinksHtml = paperLinks
+    .map((link) => `<li><a href="${escapeHtml(link.url)}">${escapeHtml(link.label)}</a> - ${escapeHtml(link.note)}</li>`)
+    .join("");
   const referenceHtml = referenceComparisons(sim)
     .map((item) => `<tr><td>${escapeHtml(item.label)}</td><td>${escapeHtml(formatValue(item.live))} ${escapeHtml(item.unit)}</td><td>${escapeHtml(formatValue(item.paperReference))} ${escapeHtml(item.unit)}</td><td>Δ ${escapeHtml(formatDelta(item))}</td></tr>`)
     .join("");
@@ -3085,6 +3121,9 @@ function completeHtmlReport() {
     ${stepHtml}
     <section>
       <h2>Reference assets from uploaded ZIPs</h2>
+      <h3>Paper links</h3>
+      <ul>${paperLinksHtml}</ul>
+      <h3>Reference images</h3>
       <ul>${referencesHtml}</ul>
     </section>
     <section>
