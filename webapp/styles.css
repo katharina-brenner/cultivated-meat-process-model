@@ -1752,6 +1752,12 @@ td:first-child {
   box-shadow: 0 10px 26px rgba(17, 24, 31, 0.08);
 }
 
+.reference-tile.reference-paper {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(239,246,249,0.88));
+  border-color: rgba(58, 110, 165, 0.2);
+}
+
 .reference-tile span {
   grid-row: span 2;
   width: 34px;
