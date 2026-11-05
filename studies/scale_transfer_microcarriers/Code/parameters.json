@@ -1,0 +1,373 @@
+{
+  "schema_version": 1,
+  "scope": "Conditional engineering envelope; outputs accepted input-cell equivalents/year, not meat mass. All non-correlation values are explicitly assumed.",
+  "parameters": {
+    "height_diameter_ratio": {
+      "value": 1.5,
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "impeller_tank_ratio": {
+      "value": 0.4,
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "impeller_count": {
+      "value": 1,
+      "unit": "count",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "power_number": {
+      "value": 1.3,
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "gassed_power_ratio": {
+      "value": 0.8,
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "density_kg_m3": {
+      "value": 1000.0,
+      "unit": "kg/m3",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "kinematic_viscosity_m2_s": {
+      "value": 7e-07,
+      "unit": "m2/s",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "reference_volume_m3": {
+      "value": 0.003,
+      "unit": "m3",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "reference_surface_m2_m3": {
+      "value": 2000.0,
+      "unit": "m2/m3",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "reference_Njs_s_1": {
+      "value": 1.0,
+      "unit": "s-1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Assumed 60 rpm at 3 L and 20 cm2/mL; not the 45 rpm spinner setting in Bodiou et al."
+    },
+    "surface_density_cells_m2": {
+      "value": 200000000.0,
+      "unit": "cells/m2",
+      "status": "assumed",
+      "source_url": "https://doi.org/10.1038/s41598-025-97813-7",
+      "note": "Assumed endpoint within reported 15000\u201325000 cells/cm2 addition-trigger interval; not measured endpoint capacity."
+    },
+    "inoculum_cells_m3": {
+      "value": 100000000000.0,
+      "unit": "cells/m3",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "doubling_time_s": {
+      "value": 172800.0,
+      "unit": "s",
+      "status": "assumed",
+      "source_url": "https://doi.org/10.1038/s41598-025-97813-7",
+      "note": "Assumed 48 h within reported 40\u201360 h average laboratory span; not scale validation."
+    },
+    "lag_time_s": {
+      "value": 86400.0,
+      "unit": "s",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "expansion_turnaround_s": {
+      "value": 172800.0,
+      "unit": "s",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "operating_time_s_year": {
+      "value": 28512000.0,
+      "unit": "s/year",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "gas_superficial_velocity_m_s": {
+      "value": 0.001,
+      "unit": "m/s",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "oxygen_transfer_coefficient": {
+      "value": 0.075,
+      "unit": "dimensional coefficient for kLa[s-1], power[W/m3], us[m/s]",
+      "status": "literature_correlation",
+      "source_url": "https://doi.org/10.1002/bit.27848",
+      "note": "Empirical prior; oxygen relation is CHO-media context, suspension is reference-normalized solids correlation."
+    },
+    "oxygen_power_exponent": {
+      "value": 0.47,
+      "unit": "1",
+      "status": "literature_correlation",
+      "source_url": "https://doi.org/10.1002/bit.27848",
+      "note": "Empirical prior; oxygen relation is CHO-media context, suspension is reference-normalized solids correlation."
+    },
+    "oxygen_gas_exponent": {
+      "value": 0.8,
+      "unit": "1",
+      "status": "literature_correlation",
+      "source_url": "https://doi.org/10.1002/bit.27848",
+      "note": "Empirical prior; oxygen relation is CHO-media context, suspension is reference-normalized solids correlation."
+    },
+    "oxygen_transfer_multiplier": {
+      "value": 1.0,
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "oxygen_saturation_mol_m3": {
+      "value": 0.2,
+      "unit": "mol/m3",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "oxygen_minimum_mol_m3": {
+      "value": 0.04,
+      "unit": "mol/m3",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "oxygen_demand_mol_cell_s": {
+      "value": 1e-16,
+      "unit": "mol/(cell s)",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "harvest_recovery": {
+      "value": 0.8,
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "accepted_fraction": {
+      "value": 0.9,
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "maturation_loading_cells_m3": {
+      "value": 1000000000000.0,
+      "unit": "input cells/m3",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "maturation_cycle_s": {
+      "value": 864000.0,
+      "unit": "s",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "harvest_capacity_cells_year": {
+      "value": null,
+      "unit": "input cells/year",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Null explicitly assumes unconstrained harvest service capacity, apart from harvest recovery."
+    },
+    "qualified_speed_s_1": {
+      "value": null,
+      "unit": "s-1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Null means no measured biological speed qualification; only assumed pmax bound is imposed."
+    },
+    "turbulent_screen_Re": {
+      "value": 10000.0,
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected illustrative scenario; not a measured CM parameter."
+    },
+    "suspension_loading_exponent": {
+      "value": 0.13,
+      "unit": "1",
+      "status": "literature_correlation",
+      "source_url": "https://doi.org/10.1016/0009-2509(58)85031-9",
+      "note": "Empirical prior; oxygen relation is CHO-media context, suspension is reference-normalized solids correlation."
+    },
+    "suspension_diameter_exponent": {
+      "value": -0.85,
+      "unit": "1",
+      "status": "literature_correlation",
+      "source_url": "https://doi.org/10.1016/0009-2509(58)85031-9",
+      "note": "Empirical prior; oxygen relation is CHO-media context, suspension is reference-normalized solids correlation."
+    }
+  },
+  "scenario_inputs": {
+    "surface_cm2_ml": {
+      "value": [
+        10,
+        80,
+        1
+      ],
+      "unit": "cm2/mL [start,stop,step]",
+      "status": "assumed",
+      "source_url": "https://doi.org/10.1038/s41598-025-97813-7",
+      "note": "Author-selected sweep within experimentally explored surface range; not universal qualified industrial bounds."
+    },
+    "pmax_W_m3": {
+      "value": [
+        2,
+        5,
+        20
+      ],
+      "unit": "W/m3",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Conditional power envelopes; not biological safety limits."
+    },
+    "maturation_volume_ratio": {
+      "value": [
+        0.1,
+        0.3,
+        1
+      ],
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null
+    },
+    "qO2_multiplier": {
+      "value": [
+        0.3,
+        1,
+        3
+      ],
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Scenario sensitivity; not confidence bounds."
+    },
+    "architecture_vessel_count_and_volume_L": {
+      "value": [
+        [
+          20000,
+          5
+        ],
+        [
+          200,
+          500
+        ],
+        [
+          10,
+          10000
+        ],
+        [
+          4,
+          25000
+        ]
+      ],
+      "unit": "[count,L]",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Equal 100 m3 total working volume, STR members only; no transfer to rocking format."
+    },
+    "loading_base_vessel_count_and_volume_L": {
+      "value": [
+        100,
+        1000
+      ],
+      "unit": "[count,L]",
+      "status": "assumed",
+      "source_url": null
+    },
+    "maturation_ratio_sweep": {
+      "value": [
+        0.05,
+        1,
+        0.01
+      ],
+      "unit": "1 [start,stop,step]",
+      "status": "assumed",
+      "source_url": null
+    },
+    "base_surface_cm2_ml": {
+      "value": 40,
+      "unit": "cm2/mL",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected scenario."
+    },
+    "base_pmax_W_m3": {
+      "value": 5,
+      "unit": "W/m3",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected scenario."
+    },
+    "base_maturation_volume_ratio": {
+      "value": 0.3,
+      "unit": "1",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected scenario."
+    },
+    "intervention_surface_cm2_ml": {
+      "value": [
+        20,
+        40,
+        80
+      ],
+      "unit": "cm2/mL",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected scenario."
+    },
+    "allocation_qO2_sweep": {
+      "value": [
+        0.3,
+        3,
+        0.025
+      ],
+      "unit": "1 [start,stop,step]",
+      "status": "assumed",
+      "source_url": null,
+      "note": "Author-selected scenario."
+    }
+  },
+  "derived_outputs": {
+    "status": "derived",
+    "source_url": null,
+    "note": "All output columns are original deterministic calculations from model.py equations and declared inputs; no fabricated experimental observations."
+  }
+}
