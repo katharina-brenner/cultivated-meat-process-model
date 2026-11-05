@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "Please cite the manuscript and this versioned conditional model when reusing these calculations."
+title: "Carrier loading to accepted capacity in cultivated meat: conditional engineering model"
+type: software
+authors:
+  - family-names: Brenner
+    given-names: Katharina Julia
+version: 1.2.0
+date-released: 2026-11-05
+abstract: "Deterministic scenario analysis of suspension, oxygen delivery, expansion occupancy and downstream capacity; no new experimental measurements."
+repository-code: "https://github.com/katharina-brenner/cultivated-meat-process-model/tree/study/cm-scale-transfer-20261103/studies/scale_transfer_microcarriers"
