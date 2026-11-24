@@ -18,6 +18,8 @@ python Code/plot_figures.py
 
 Run these commands from this study directory. Paths resolve relative to the scripts. Scenario generation writes seven CSV tables and `Source_Data/model_summary.json`; plotting writes Figures 5–6 as editable SVG, vector PDF and 600-dpi PNG/TIFF. There are 28 tests. Figures 1–4 belong to the original manuscript and are supplied unchanged in the submission package; they are not required to run the model.
 
+Version 1.2.1 updates the presentation of Figures 5–6. Ochre, teal and indigo identify carrier surface, oxygen and maturation, with direct labels to identify each regime. The intervention plot uses bars with a common zero origin and reports each capacity. The calculation and scenario inputs are identical to version 1.2.0.
+
 The public study contains model code, parameter provenance, tests and reproduction instructions. Running the scripts generates the calculated Source Data and the two model figures locally.
 
 ## Inputs, boundaries and units
@@ -46,7 +48,7 @@ These are deterministic scenario results, not measured performance, probability 
 | `Code/parameters.json` | Exact parameter and scenario register with DOI links |
 | `Code/run_scenarios.py` | Deterministic source-table generation |
 | `Code/test_model.py` | Independent unit, limit, conservation and intervention checks |
-| `Code/figure_glyphs.py` | Original flat reactor symbols using the manuscript palette |
+| `Code/figure_glyphs.py` | Reactor drawing primitives used in the process schematic |
 | `Code/plot_figures.py` | Two original calculated main figures |
 | `Code/verify_independently.py` | Independent recomputation without importing the model or runner |
 | `Source_Data/*.csv` | Calculated coordinates and diagnostics; no experimental rows |
@@ -54,7 +56,7 @@ These are deterministic scenario results, not measured performance, probability 
 
 Figure 6 maps oxygen demand against maturation allocation; the equal-volume architecture comparison is retained as a Supplementary Information consistency check, since its equal outputs follow from imposed common assumptions. New figure code and layouts are original. No publisher figure or external figure image is copied. Standard physical and empirical relationships retain the sources linked above. The submission's Supplementary Information gives the full equations and limitations. The separate study subdirectory does not change the repository's existing process-model application.
 
-Rechecked 5 November 2026. This package records a reproducible scenario analysis; author review and journal-specific requirements remain part of submission.
+Artwork revised 24 November 2026. This package records a reproducible scenario analysis.
 
 ## Numerical audit
 
